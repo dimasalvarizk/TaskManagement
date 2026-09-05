@@ -114,23 +114,34 @@ interface WorkspaceState {
   deleteDoc: (docId: string) => Promise<void>;
 }
 
-export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
-  currentUser: typeof window !== 'undefined' ? (() => {
+export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
+  // Helper to read initial offline cache
+  const cachedData = typeof window !== 'undefined' ? (() => {
     try {
-      const stored = localStorage.getItem('taskflow_user');
-      return stored ? JSON.parse(stored) : null;
+      const raw = localStorage.getItem('taskflow_workspace_data');
+      return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
-  })() : null,
-  users: INITIAL_USERS,
-  projects: INITIAL_PROJECTS,
-  tasks: INITIAL_TASKS,
-  docs: INITIAL_DOCS,
-  activities: INITIAL_ACTIVITIES,
-  notifications: INITIAL_NOTIFICATIONS,
-  sentEmails: INITIAL_SENT_EMAILS,
-  isDatabaseConnected: false,
+  })() : null;
+
+  return {
+    currentUser: typeof window !== 'undefined' ? (() => {
+      try {
+        const stored = localStorage.getItem('taskflow_user');
+        return stored ? JSON.parse(stored) : null;
+      } catch {
+        return null;
+      }
+    })() : null,
+    users: cachedData?.users && cachedData.users.length ? cachedData.users : INITIAL_USERS,
+    projects: cachedData?.projects && cachedData.projects.length ? cachedData.projects : INITIAL_PROJECTS,
+    tasks: cachedData?.tasks && cachedData.tasks.length ? cachedData.tasks : INITIAL_TASKS,
+    docs: cachedData?.docs && cachedData.docs.length ? cachedData.docs : INITIAL_DOCS,
+    activities: cachedData?.activities && cachedData.activities.length ? cachedData.activities : INITIAL_ACTIVITIES,
+    notifications: cachedData?.notifications && cachedData.notifications.length ? cachedData.notifications : INITIAL_NOTIFICATIONS,
+    sentEmails: cachedData?.sentEmails && cachedData.sentEmails.length ? cachedData.sentEmails : INITIAL_SENT_EMAILS,
+    isDatabaseConnected: false,
   
   smtpConfig: {
     host: 'smtp.gmail.com',
@@ -278,7 +289,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
-          set({
+          const newWorkspaceData = {
             users: data.users && data.users.length ? data.users : get().users,
             projects: data.projects && data.projects.length ? data.projects : get().projects,
             tasks: data.tasks && data.tasks.length ? data.tasks : get().tasks,
@@ -287,7 +298,16 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
             notifications: data.notifications && data.notifications.length ? data.notifications : get().notifications,
             sentEmails: data.sentEmails && data.sentEmails.length ? data.sentEmails : get().sentEmails,
             isDatabaseConnected: true,
-          });
+          };
+
+          set(newWorkspaceData);
+
+          // Save snapshot to local storage for offline use
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('taskflow_workspace_data', JSON.stringify(newWorkspaceData));
+            } catch (_) {}
+          }
 
           // Refresh current user if exists
           const current = get().currentUser;
@@ -303,7 +323,25 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
         }
       }
     } catch (err) {
-      console.warn('Workspace sync warning: fallback to local memory state.', err);
+      console.warn('Workspace sync warning: fallback to local cached state.', err);
+      // Attempt restore from local storage cache
+      if (typeof window !== 'undefined') {
+        try {
+          const cached = localStorage.getItem('taskflow_workspace_data');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            set({
+              users: parsed.users || get().users,
+              projects: parsed.projects || get().projects,
+              tasks: parsed.tasks || get().tasks,
+              docs: parsed.docs || get().docs,
+              activities: parsed.activities || get().activities,
+              notifications: parsed.notifications || get().notifications,
+              sentEmails: parsed.sentEmails || get().sentEmails,
+            });
+          }
+        } catch (_) {}
+      }
     }
   },
 
@@ -876,5 +914,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
     } catch (err) {
       console.warn('Sync deleteDoc error:', err);
     }
-  }
-}));
+  },
+  };
+});

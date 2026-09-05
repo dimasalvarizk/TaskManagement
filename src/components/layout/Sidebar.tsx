@@ -14,6 +14,7 @@ import {
   Trash2,
   Pencil,
   X,
+  Download,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -35,8 +36,31 @@ export const Sidebar: React.FC = () => {
 
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingProjectName, setEditingProjectName] = useState<string>('');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [canInstall, setCanInstall] = useState(false);
 
   const router = useRouter();
+
+  React.useEffect(() => {
+    const handleBeforeInstall = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice.outcome === 'accepted') {
+      setCanInstall(false);
+      setDeferredPrompt(null);
+    }
+  };
 
   const handleLogout = () => {
     logout();
@@ -285,6 +309,19 @@ export const Sidebar: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Optional PWA Install Action */}
+          {canInstall && (
+            <div className="px-2.5 py-1.5">
+              <button
+                onClick={handleInstallApp}
+                className="w-full py-1.5 px-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Install App</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* User Footer Profile & Role Badge */}

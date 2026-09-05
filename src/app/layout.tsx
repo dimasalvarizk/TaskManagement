@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import { PwaManager } from '@/components/pwa/PwaManager';
 
 export const viewport: Viewport = {
   themeColor: [
@@ -121,6 +122,14 @@ export default function RootLayout({
   return (
     <html lang="id" className="light" suppressHydrationWarning>
       <head>
+        <meta name="application-name" content="TaskFlow" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="TaskFlow" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -141,6 +150,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased select-none min-h-screen bg-neutral-50 dark:bg-[#0d0d0e] text-neutral-900 dark:text-neutral-100">
         {children}
+        <PwaManager />
       </body>
     </html>
   );
