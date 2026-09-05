@@ -81,8 +81,8 @@ export const NewTaskModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 select-none animate-in fade-in duration-150">
-      <div className="w-full max-w-lg bg-white dark:bg-[#141620] border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-xl p-6 space-y-4 text-xs text-slate-800 dark:text-slate-200 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 select-none animate-in fade-in duration-150">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto bg-white dark:bg-[#141620] border border-slate-200 dark:border-neutral-800 rounded-2xl shadow-xl p-4 sm:p-6 space-y-4 text-xs text-slate-800 dark:text-slate-200 animate-in zoom-in-95 duration-150">
         
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-neutral-800 pb-3.5">

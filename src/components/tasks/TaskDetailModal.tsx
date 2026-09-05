@@ -56,8 +56,14 @@ export const TaskDetailModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
-      <div className="w-full max-w-xl bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-slate-800 h-full flex flex-col justify-between shadow-2xl text-xs text-slate-800 dark:text-slate-200">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-150"
+      onClick={() => setActiveTaskId(null)}
+    >
+      <div
+        className="w-full max-w-xl bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-slate-800 h-full flex flex-col justify-between shadow-2xl text-xs text-slate-800 dark:text-slate-200 animate-in slide-in-from-right duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -101,15 +107,15 @@ export const TaskDetailModal: React.FC = () => {
           </div>
 
           {/* Properties Grid */}
-          <div className="grid grid-cols-2 gap-2.5 p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 text-xs">
             {/* Status */}
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 dark:text-slate-500 w-16">Status</span>
+              <span className="text-slate-400 dark:text-slate-500 w-16 shrink-0">Status</span>
               {!isViewer ? (
                 <select
                   value={task.status}
                   onChange={(e) => updateTask(task.id, { status: e.target.value as TaskStatus })}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1 text-xs focus:outline-none"
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1 text-xs focus:outline-none flex-1 max-w-[150px]"
                 >
                   {INITIAL_COLUMNS.map((col) => (
                     <option key={col.id} value={col.id}>
@@ -126,12 +132,12 @@ export const TaskDetailModal: React.FC = () => {
 
             {/* Priority */}
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 dark:text-slate-500 w-16">Priority</span>
+              <span className="text-slate-400 dark:text-slate-500 w-16 shrink-0">Priority</span>
               {!isViewer ? (
                 <select
                   value={task.priority}
                   onChange={(e) => updateTask(task.id, { priority: e.target.value as Priority })}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1 uppercase text-xs font-medium focus:outline-none"
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1 uppercase text-xs font-medium focus:outline-none flex-1 max-w-[150px]"
                 >
                   <option value="urgent">Urgent</option>
                   <option value="high">High</option>
@@ -147,18 +153,18 @@ export const TaskDetailModal: React.FC = () => {
 
             {/* Due Date */}
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 dark:text-slate-500 w-16">Due Date</span>
+              <span className="text-slate-400 dark:text-slate-500 w-16 shrink-0">Due Date</span>
               <input
                 type="date"
                 disabled={isViewer}
                 value={task.dueDate}
                 onChange={(e) => updateTask(task.id, { dueDate: e.target.value })}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded px-2 py-1 text-xs font-mono focus:outline-none"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg px-2 py-1 text-xs font-mono focus:outline-none flex-1 max-w-[150px]"
               />
             </div>
 
-            {/* Assignees */}
-            <div className="space-y-1.5 pt-1">
+            {/* Assignees (Full Width) */}
+            <div className="col-span-1 sm:col-span-2 space-y-1.5 pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
               <span className="text-slate-400 dark:text-slate-500 text-[11px] font-medium">Assigned Team Members:</span>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {users.map((u) => {
@@ -175,7 +181,7 @@ export const TaskDetailModal: React.FC = () => {
                           : [...task.assigneeIds, u.id];
                         updateTask(task.id, { assigneeIds: newAssignees.length > 0 ? newAssignees : [u.id] });
                       }}
-                      className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-xs transition-all border cursor-pointer ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs transition-all border cursor-pointer ${
                         isAssigned
                           ? 'bg-indigo-50 dark:bg-indigo-950/70 border-indigo-300 dark:border-indigo-800 text-indigo-900 dark:text-indigo-200 font-medium'
                           : 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 opacity-60 hover:opacity-100'
@@ -184,7 +190,7 @@ export const TaskDetailModal: React.FC = () => {
                       <img
                         src={u.avatar}
                         alt={u.name}
-                        className="w-4 h-4 rounded-full object-cover"
+                        className="w-4 h-4 rounded-full object-cover shrink-0"
                       />
                       <span className="text-[11px]">{u.name}</span>
                     </button>

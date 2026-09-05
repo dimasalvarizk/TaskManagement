@@ -24,6 +24,7 @@ import {
   Sparkles,
   Sun,
   Moon,
+  Menu,
 } from 'lucide-react';
 import { Priority, Role } from '@/types';
 
@@ -47,6 +48,8 @@ export const Navbar: React.FC = () => {
     toggleSound,
     theme,
     toggleTheme,
+    isMobileSidebarOpen,
+    toggleMobileSidebar,
     setNotificationDrawerOpen,
     setEmailInspectorOpen,
     selectedProjectId,
@@ -63,10 +66,12 @@ export const Navbar: React.FC = () => {
 
   const [priorityMenuOpen, setPriorityMenuOpen] = useState(false);
   const [assigneeMenuOpen, setAssigneeMenuOpen] = useState(false);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [isMac, setIsMac] = useState(false);
 
   const priorityRef = useRef<HTMLDivElement>(null);
   const assigneeRef = useRef<HTMLDivElement>(null);
+  const mobileFilterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setIsMac(typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0);
@@ -77,6 +82,9 @@ export const Navbar: React.FC = () => {
       }
       if (assigneeRef.current && !assigneeRef.current.contains(e.target as Node)) {
         setAssigneeMenuOpen(false);
+      }
+      if (mobileFilterRef.current && !mobileFilterRef.current.contains(e.target as Node)) {
+        setMobileFilterOpen(false);
       }
     };
 
@@ -137,9 +145,18 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="h-12 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#111318]/95 backdrop-blur-md px-4 sm:px-5 flex items-center justify-between z-10 shrink-0 select-none gap-4 transition-colors">
+    <header className="h-12 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#111318]/95 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between z-10 shrink-0 select-none gap-2 sm:gap-4 transition-colors">
       {/* 1. Left Breadcrumbs & Project Scope */}
       <div className="flex items-center gap-2 text-xs min-w-0">
+        {/* Mobile Sidebar Hamburger Toggle */}
+        <button
+          onClick={toggleMobileSidebar}
+          className="md:hidden p-1.5 -ml-1 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 cursor-pointer"
+          title="Toggle Navigation Menu"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
         <div className="flex items-center gap-1.5 font-medium text-slate-800 dark:text-slate-200 truncate">
           {currentProject ? (
             <>
@@ -147,16 +164,16 @@ export const Navbar: React.FC = () => {
                 className="w-2 h-2 rounded-full shrink-0"
                 style={{ backgroundColor: currentProject.color }}
               />
-              <span className="truncate max-w-[140px] sm:max-w-[200px]">{currentProject.name}</span>
+              <span className="truncate max-w-[100px] sm:max-w-[200px]">{currentProject.name}</span>
             </>
           ) : (
             <span className="text-slate-700 dark:text-slate-300">All Projects</span>
           )}
         </div>
 
-        <span className="text-slate-300 dark:text-slate-700 font-light">/</span>
+        <span className="text-slate-300 dark:text-slate-700 font-light hidden sm:inline">/</span>
 
-        <span className="text-slate-500 dark:text-slate-400 font-normal truncate">
+        <span className="text-slate-500 dark:text-slate-400 font-normal truncate hidden sm:inline">
           {getViewLabel()}
         </span>
 
@@ -198,7 +215,7 @@ export const Navbar: React.FC = () => {
           )}
         </div>
 
-        {/* Filter Dropdowns */}
+        {/* Filter Dropdowns (Desktop) */}
         {showTaskFilters && (
           <div className="hidden lg:flex items-center gap-1.5 shrink-0">
             {/* Priority Filter */}
@@ -317,25 +334,100 @@ export const Navbar: React.FC = () => {
             )}
           </div>
         )}
+
+        {/* Mobile Filter Button (< lg screens) */}
+        {showTaskFilters && (
+          <div className="lg:hidden relative shrink-0" ref={mobileFilterRef}>
+            <button
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              className={`p-1.5 rounded-lg border text-xs font-medium transition-colors relative cursor-pointer ${
+                hasActiveFilters
+                  ? 'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400'
+                  : 'border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Filters"
+            >
+              <Filter className="w-3.5 h-3.5" />
+              {hasActiveFilters && (
+                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-indigo-600" />
+              )}
+            </button>
+
+            {mobileFilterOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#181b22] border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl p-3 z-40 space-y-3 animate-in fade-in zoom-in-95">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <span className="font-semibold text-xs text-slate-900 dark:text-slate-100">Filter Tasks</span>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline"
+                    >
+                      Reset All
+                    </button>
+                  )}
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Priority</label>
+                  <div className="grid grid-cols-2 gap-1">
+                    {PRIORITY_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setSelectedPriority(opt.value)}
+                        className={`px-2 py-1 rounded text-[11px] font-medium text-left flex items-center gap-1.5 transition-colors ${
+                          selectedPriority === opt.value
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800'
+                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full ${opt.dotColor}`} />
+                        <span className="capitalize truncate">{opt.value === 'all' ? 'All' : opt.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Assignee */}
+                <div className="space-y-1">
+                  <label className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">Assignee</label>
+                  <select
+                    value={selectedAssigneeId}
+                    onChange={(e) => setSelectedAssigneeId(e.target.value)}
+                    className="w-full text-xs px-2 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none"
+                  >
+                    <option value="all">All Members</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 3. Right Controls */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
         {!isViewer && (
           <button
             onClick={() => setNewTaskModalOpen(true)}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-xs transition-colors"
+            className="flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-xs transition-colors cursor-pointer"
+            title="Create New Task"
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">New Task</span>
           </button>
         )}
 
-        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
+        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" />
 
         <button
           onClick={toggleTheme}
-          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+          className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
           title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         >
           {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -343,7 +435,7 @@ export const Navbar: React.FC = () => {
 
         <button
           onClick={() => setNotificationDrawerOpen(true)}
-          className="relative p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors"
+          className="relative p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
           title="Notifications"
         >
           <Bell className="w-4 h-4" />
@@ -352,9 +444,9 @@ export const Navbar: React.FC = () => {
           )}
         </button>
 
-        {/* User Role Badge */}
+        {/* User Role Badge (Hidden on very tiny screens to save space) */}
         <span
-          className={`px-2 py-0.5 rounded text-[10px] font-medium border ${getRoleBadge(
+          className={`hidden xs:inline-flex px-1.5 sm:px-2 py-0.5 rounded text-[10px] font-medium border ${getRoleBadge(
             currentUser?.role
           )}`}
         >

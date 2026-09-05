@@ -46,8 +46,8 @@ export const CommandPalette: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-start justify-center pt-20 px-4">
-      <div className="w-full max-w-lg bg-white dark:bg-[#16181f] border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-start justify-center pt-12 sm:pt-20 px-3 sm:px-4">
+      <div className="w-full max-w-lg bg-white dark:bg-[#16181f] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Input Bar */}
         <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2.5">
           <Search className="w-4 h-4 text-slate-400 shrink-0" />

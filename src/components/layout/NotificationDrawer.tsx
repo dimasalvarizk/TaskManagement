@@ -47,8 +47,14 @@ export const NotificationDrawer: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end">
-      <div className="w-full max-w-sm bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-slate-800 h-full flex flex-col justify-between shadow-2xl text-xs select-none text-slate-800 dark:text-slate-200">
+    <div
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-150"
+      onClick={() => setNotificationDrawerOpen(false)}
+    >
+      <div
+        className="w-full max-w-sm bg-white dark:bg-[#16181f] border-l border-slate-200 dark:border-slate-800 h-full flex flex-col justify-between shadow-2xl text-xs select-none text-slate-800 dark:text-slate-200 animate-in slide-in-from-right duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
           <div className="flex items-center gap-2">

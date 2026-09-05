@@ -17,6 +17,7 @@ import {
   FileText,
   Sparkles,
   Pencil,
+  X,
 } from 'lucide-react';
 
 const BLOCK_TYPES = [
@@ -89,6 +90,7 @@ export const DocEditor: React.FC = () => {
 
   const [editingDocId, setEditingDocId] = useState<string | null>(null);
   const [editingDocTitle, setEditingDocTitle] = useState<string>('');
+  const [isMobileDocListOpen, setIsMobileDocListOpen] = useState(false);
 
   // Slash menu state
   const [slashMenuBlockId, setSlashMenuBlockId] = useState<string | null>(null);
@@ -264,29 +266,60 @@ export const DocEditor: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex overflow-hidden">
+    <div className="h-full flex overflow-hidden relative">
+      {/* Mobile Backdrop for Notes Drawer */}
+      {isMobileDocListOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs md:hidden"
+          onClick={() => setIsMobileDocListOpen(false)}
+        />
+      )}
+
       {/* Left Selector Sidebar */}
-      <div className="w-56 border-r border-slate-200 dark:border-neutral-800 bg-slate-50/50 dark:bg-[#111318] p-3 space-y-2 shrink-0 select-none transition-colors">
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-slate-50 dark:bg-[#111318] p-3 space-y-2 select-none transition-transform duration-200 md:static md:translate-x-0 md:w-56 border-r border-slate-200 dark:border-neutral-800 ${
+          isMobileDocListOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
         <div className="flex items-center justify-between px-2">
           <h3 className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             Documents
           </h3>
-          {!isViewer && (
+          <div className="flex items-center gap-1">
+            {!isViewer && (
+              <button
+                onClick={() => {
+                  createDoc('New Note', selectedProjectId || 'p1');
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    setIsMobileDocListOpen(false);
+                  }
+                }}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer transition-colors"
+                title="Add Document"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
-              onClick={() => createDoc('New Note', selectedProjectId || 'p1')}
-              className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 cursor-pointer transition-colors"
-              title="Add Document"
+              onClick={() => setIsMobileDocListOpen(false)}
+              className="md:hidden p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+              title="Close list"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <X className="w-3.5 h-3.5" />
             </button>
-          )}
+          </div>
         </div>
 
-        <div className="space-y-0.5">
+        <div className="space-y-0.5 overflow-y-auto max-h-[calc(100vh-120px)]">
           {docs.map((doc) => (
             <div
               key={doc.id}
-              onClick={() => setActiveDocId(doc.id)}
+              onClick={() => {
+                setActiveDocId(doc.id);
+                if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                  setIsMobileDocListOpen(false);
+                }
+              }}
               onDoubleClick={(e) => {
                 if (isViewer) return;
                 e.stopPropagation();
@@ -373,8 +406,16 @@ export const DocEditor: React.FC = () => {
       </div>
 
       {/* Main Document Content Area */}
-      <div className="flex-1 overflow-y-auto p-6 sm:p-10 max-w-3xl mx-auto space-y-6">
-        
+      <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-3xl mx-auto space-y-5 w-full">
+        {/* Mobile Notes Drawer Open Toggle */}
+        <button
+          onClick={() => setIsMobileDocListOpen(true)}
+          className="md:hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-neutral-700 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+        >
+          <FileText className="w-3.5 h-3.5 text-indigo-500" />
+          <span>Switch Note ({docs.length} notes)</span>
+        </button>
+
         {/* Document Header */}
         <div className="space-y-2 border-b border-slate-200 dark:border-neutral-800 pb-4">
           <input

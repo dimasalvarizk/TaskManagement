@@ -142,13 +142,13 @@ export const TeamSettingsView: React.FC = () => {
         </div>
 
         {/* Role Switcher */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-[11px] text-slate-400 dark:text-slate-500 mr-1">Switch Role:</span>
           {(['Admin', 'Member', 'Viewer'] as Role[]).map((r) => (
             <button
               key={r}
               onClick={() => switchUserRole(r)}
-              className={`px-2.5 py-1 rounded-lg text-xs transition-colors ${
+              className={`px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer ${
                 currentUser?.role === r
                   ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
@@ -360,82 +360,84 @@ export const TeamSettingsView: React.FC = () => {
 
         {/* Member Table */}
         <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#12141a] shadow-xs">
-          <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-            <thead className="bg-slate-50 dark:bg-slate-900/70 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] font-medium border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th className="py-3 px-4">User</th>
-                <th className="py-3 px-4">Email</th>
-                <th className="py-3 px-4">Role</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <td className="py-3 px-4">
-                    <div className="flex items-center gap-2.5">
-                      <div
-                        className="relative group cursor-pointer shrink-0"
-                        onClick={() => (isAdmin || user.id === currentUser?.id) && setEditingAvatarUser(user)}
-                        title="Click to edit photo"
-                      >
-                        <img
-                          src={user.avatar}
-                          alt={user.name}
-                          className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-800 transition-transform group-hover:scale-105"
-                        />
-                        {(isAdmin || user.id === currentUser?.id) && (
-                          <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Camera className="w-3.5 h-3.5 text-white" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{user.name}</span>
-                        {(isAdmin || user.id === currentUser?.id) && (
-                          <button
-                            onClick={() => setEditingAvatarUser(user)}
-                            className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline text-left cursor-pointer"
-                          >
-                            Edit Photo
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">{user.email}</td>
-                  <td className="py-3 px-4">
-                    {isAdmin && user.id !== currentUser.id ? (
-                      <select
-                        value={user.role}
-                        onChange={(e) => updateUserRole(user.id, e.target.value as Role)}
-                        className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded px-2 py-1 cursor-pointer focus:outline-none"
-                      >
-                        <option value="Admin">Admin</option>
-                        <option value="Member">Member</option>
-                        <option value="Viewer">Viewer</option>
-                      </select>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs">
-                        {user.role}
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3 px-4 text-right">
-                    {isAdmin && user.id !== currentUser.id && (
-                      <button
-                        onClick={() => removeUser(user.id)}
-                        className="p-1 rounded text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                        title="Remove user"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 min-w-[500px]">
+              <thead className="bg-slate-50 dark:bg-slate-900/70 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] font-medium border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th className="py-3 px-4">User</th>
+                  <th className="py-3 px-4">Email</th>
+                  <th className="py-3 px-4">Role</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="relative group cursor-pointer shrink-0"
+                          onClick={() => (isAdmin || user.id === currentUser?.id) && setEditingAvatarUser(user)}
+                          title="Click to edit photo"
+                        >
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-800 transition-transform group-hover:scale-105"
+                          />
+                          {(isAdmin || user.id === currentUser?.id) && (
+                            <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Camera className="w-3.5 h-3.5 text-white" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-slate-900 dark:text-slate-100">{user.name}</span>
+                          {(isAdmin || user.id === currentUser?.id) && (
+                            <button
+                              onClick={() => setEditingAvatarUser(user)}
+                              className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline text-left cursor-pointer"
+                            >
+                              Edit Photo
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-slate-500 dark:text-slate-400">{user.email}</td>
+                    <td className="py-3 px-4">
+                      {isAdmin && user.id !== currentUser.id ? (
+                        <select
+                          value={user.role}
+                          onChange={(e) => updateUserRole(user.id, e.target.value as Role)}
+                          className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 text-xs rounded px-2 py-1 cursor-pointer focus:outline-none"
+                        >
+                          <option value="Admin">Admin</option>
+                          <option value="Member">Member</option>
+                          <option value="Viewer">Viewer</option>
+                        </select>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs">
+                          {user.role}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      {isAdmin && user.id !== currentUser.id && (
+                        <button
+                          onClick={() => removeUser(user.id)}
+                          className="p-1 rounded text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Remove user"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 

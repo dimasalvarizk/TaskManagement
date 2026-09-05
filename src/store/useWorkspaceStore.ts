@@ -70,6 +70,9 @@ interface WorkspaceState {
   // Audio & Drawer Toggles
   toggleSound: () => void;
   setNotificationDrawerOpen: (open: boolean) => void;
+  isMobileSidebarOpen: boolean;
+  setMobileSidebarOpen: (open: boolean) => void;
+  toggleMobileSidebar: () => void;
   setEmailInspectorOpen: (open: boolean) => void;
   setActiveEmailPreview: (email: SentEmail | null) => void;
   
@@ -142,6 +145,9 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   
   isSoundEnabled: true,
   isNotificationDrawerOpen: false,
+  isMobileSidebarOpen: false,
+  setMobileSidebarOpen: (open) => set({ isMobileSidebarOpen: open }),
+  toggleMobileSidebar: () => set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
   isEmailInspectorOpen: false,
   activeEmailPreview: INITIAL_SENT_EMAILS[0],
   
