@@ -33,35 +33,14 @@ export const Sidebar: React.FC = () => {
     isMobileSidebarOpen,
     setMobileSidebarOpen,
     logout,
+    promptInstallApp,
+    isAppInstalled,
   } = useWorkspaceStore();
 
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingProjectName, setEditingProjectName] = useState<string>('');
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [canInstall, setCanInstall] = useState(false);
 
   const router = useRouter();
-
-  React.useEffect(() => {
-    const handleBeforeInstall = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setCanInstall(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstall);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
-  }, []);
-
-  const handleInstallApp = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === 'accepted') {
-      setCanInstall(false);
-      setDeferredPrompt(null);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -315,15 +294,23 @@ export const Sidebar: React.FC = () => {
             </div>
           </div>
 
-          {/* Optional PWA Install Action */}
-          {canInstall && (
-            <div className="px-2.5 py-1.5">
+          {/* Permanent PWA Install Action */}
+          {!isAppInstalled && (
+            <div className="px-2.5 py-2">
               <button
-                onClick={handleInstallApp}
-                className="w-full py-1.5 px-2.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
+                onClick={() => handleItemSelect(() => promptInstallApp())}
+                className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/40 dark:to-purple-950/40 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-between transition-all group shadow-2xs cursor-pointer"
+                title="Install TaskFlow App (PWA)"
               >
-                <Download className="w-3.5 h-3.5" />
-                <span>Install App</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <Download className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="text-left min-w-0">
+                    <div className="font-semibold text-slate-800 dark:text-slate-100 text-[11px] truncate">Install TaskFlow</div>
+                    <div className="text-[9px] text-slate-400 dark:text-slate-500 truncate">Mode Desktop & Offline</div>
+                  </div>
+                </div>
               </button>
             </div>
           )}

@@ -66,6 +66,13 @@ interface WorkspaceState {
   isCommandPaletteOpen: boolean;
   isNewTaskModalOpen: boolean;
   isNewProjectModalOpen: boolean;
+  isInstallModalOpen: boolean;
+  setInstallModalOpen: (open: boolean) => void;
+  isAppInstalled: boolean;
+  setIsAppInstalled: (installed: boolean) => void;
+  pwaInstallPrompt: any;
+  setPwaInstallPrompt: (prompt: any) => void;
+  promptInstallApp: () => Promise<boolean>;
   
   // Data Sync
   fetchWorkspaceData: () => Promise<void>;
@@ -218,6 +225,29 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   isNewTaskModalOpen: false,
   isNewProjectModalOpen: false,
   setNewProjectModalOpen: (open) => set({ isNewProjectModalOpen: open }),
+  isInstallModalOpen: false,
+  setInstallModalOpen: (open) => set({ isInstallModalOpen: open }),
+  isAppInstalled: false,
+  setIsAppInstalled: (installed) => set({ isAppInstalled: installed }),
+  pwaInstallPrompt: null,
+  setPwaInstallPrompt: (prompt) => set({ pwaInstallPrompt: prompt }),
+  promptInstallApp: async () => {
+    const prompt = get().pwaInstallPrompt;
+    if (prompt) {
+      try {
+        await prompt.prompt();
+        const choice = await prompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          set({ pwaInstallPrompt: null, isAppInstalled: true, isInstallModalOpen: false });
+          return true;
+        }
+      } catch (e) {
+        console.warn('Install prompt error:', e);
+      }
+    }
+    set({ isInstallModalOpen: true });
+    return false;
+  },
   
   createProject: async (name: string, color = '#6366f1', description = '') => {
     const tempId = 'p-' + Date.now();

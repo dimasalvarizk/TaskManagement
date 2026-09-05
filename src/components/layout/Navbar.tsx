@@ -25,6 +25,7 @@ import {
   Sun,
   Moon,
   Menu,
+  Download,
 } from 'lucide-react';
 import { Priority, Role } from '@/types';
 
@@ -62,6 +63,8 @@ export const Navbar: React.FC = () => {
     setSelectedAssigneeId,
     setCommandPaletteOpen,
     setNewTaskModalOpen,
+    promptInstallApp,
+    isAppInstalled,
   } = useWorkspaceStore();
 
   const [priorityMenuOpen, setPriorityMenuOpen] = useState(false);
@@ -420,6 +423,18 @@ export const Navbar: React.FC = () => {
           >
             <Plus className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">New Task</span>
+          </button>
+        )}
+
+        {/* Install App Button */}
+        {!isAppInstalled && (
+          <button
+            onClick={() => promptInstallApp()}
+            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 font-medium text-xs transition-colors cursor-pointer shadow-2xs"
+            title="Install TaskFlow App (PWA)"
+          >
+            <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span className="hidden sm:inline">Install App</span>
           </button>
         )}
 

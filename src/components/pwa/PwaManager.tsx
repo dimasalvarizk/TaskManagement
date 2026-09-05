@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Download, WifiOff, CheckCircle2, X } from 'lucide-react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { InstallModal } from './InstallModal';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -10,16 +11,22 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export const PwaManager: React.FC = () => {
-  const { fetchWorkspaceData } = useWorkspaceStore();
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstallable, setIsInstallable] = useState(false);
+  const {
+    fetchWorkspaceData,
+    setPwaInstallPrompt,
+    setIsAppInstalled,
+    isAppInstalled,
+    pwaInstallPrompt,
+    promptInstallApp,
+  } = useWorkspaceStore();
+
   const [isOffline, setIsOffline] = useState(false);
   const [showOnlineToast, setShowOnlineToast] = useState(false);
   const [dismissInstallBanner, setDismissInstallBanner] = useState(false);
 
   useEffect(() => {
-    // 1. Check initial online status
     if (typeof window !== 'undefined') {
+      // 1. Check initial online status
       setIsOffline(!navigator.onLine);
 
       const handleOnline = () => {
@@ -36,8 +43,16 @@ export const PwaManager: React.FC = () => {
       window.addEventListener('online', handleOnline);
       window.addEventListener('offline', handleOffline);
 
-      // 2. Register Service Worker
-      if ('serviceWorker' in navigator && process.env.NODE_ENV !== 'development') {
+      // 2. Check standalone mode
+      const isStandalone =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as any).standalone === true;
+      if (isStandalone) {
+        setIsAppInstalled(true);
+      }
+
+      // 3. Register Service Worker unconditionally
+      if ('serviceWorker' in navigator) {
         navigator.serviceWorker
           .register('/sw.js')
           .then((reg) => {
@@ -46,24 +61,20 @@ export const PwaManager: React.FC = () => {
           .catch((err) => {
             console.warn('[PWA] Service Worker registration failed:', err);
           });
-      } else if ('serviceWorker' in navigator) {
-        // Also register in dev if supported
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
       }
 
-      // 3. Listen for PWA Install Prompt
+      // 4. Listen for PWA Install Prompt
       const handleBeforeInstallPrompt = (e: Event) => {
         e.preventDefault();
-        setDeferredPrompt(e as BeforeInstallPromptEvent);
-        setIsInstallable(true);
+        setPwaInstallPrompt(e);
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
-      // 4. Listen for appinstalled
+      // 5. Listen for appinstalled
       const handleAppInstalled = () => {
-        setIsInstallable(false);
-        setDeferredPrompt(null);
+        setIsAppInstalled(true);
+        setPwaInstallPrompt(null);
         console.log('[PWA] TaskFlow successfully installed!');
       };
 
@@ -76,17 +87,7 @@ export const PwaManager: React.FC = () => {
         window.removeEventListener('appinstalled', handleAppInstalled);
       };
     }
-  }, [fetchWorkspaceData]);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    await deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
-    if (choice.outcome === 'accepted') {
-      setIsInstallable(false);
-      setDeferredPrompt(null);
-    }
-  };
+  }, [fetchWorkspaceData, setIsAppInstalled, setPwaInstallPrompt]);
 
   return (
     <>
@@ -108,8 +109,8 @@ export const PwaManager: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Custom Install App Banner */}
-      {isInstallable && !dismissInstallBanner && !isOffline && (
+      {/* 3. Floating Quick Install Banner */}
+      {pwaInstallPrompt && !isAppInstalled && !dismissInstallBanner && !isOffline && (
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 max-w-sm p-3.5 rounded-2xl bg-white dark:bg-[#181a24] border border-slate-200 dark:border-neutral-800 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-200 select-none">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 p-1 flex items-center justify-center shrink-0 border border-indigo-200 dark:border-indigo-800">
@@ -127,7 +128,7 @@ export const PwaManager: React.FC = () => {
 
           <div className="flex items-center gap-1.5 shrink-0">
             <button
-              onClick={handleInstallClick}
+              onClick={() => promptInstallApp()}
               className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
@@ -143,6 +144,9 @@ export const PwaManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* 4. Complete Step-by-Step PWA Install Guide Modal */}
+      <InstallModal />
     </>
   );
 };
