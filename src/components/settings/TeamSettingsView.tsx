@@ -31,6 +31,12 @@ export const TeamSettingsView: React.FC = () => {
 
   const [editingAvatarUser, setEditingAvatarUser] = useState<User | null>(null);
 
+  const liveUser = users.find(
+    (u) =>
+      u.id === currentUser?.id ||
+      (u.email && currentUser?.email && u.email.toLowerCase() === currentUser.email.toLowerCase())
+  ) || currentUser;
+
   const [inviteName, setInviteName] = useState('');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<Role>('Member');
@@ -120,10 +126,10 @@ export const TeamSettingsView: React.FC = () => {
       {/* Current Session Role Quick Switcher */}
       <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#16181f] flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="relative group cursor-pointer" onClick={() => currentUser && setEditingAvatarUser(currentUser)}>
+          <div className="relative group cursor-pointer" onClick={() => (liveUser || currentUser) && setEditingAvatarUser(liveUser || currentUser)}>
             <img
-              src={currentUser?.avatar}
-              alt={currentUser?.name}
+              src={liveUser?.avatar || currentUser?.avatar}
+              alt={liveUser?.name || currentUser?.name}
               className="w-11 h-11 rounded-full border-2 border-indigo-500/30 object-cover shrink-0 transition-transform group-hover:scale-105 shadow-sm"
             />
             <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -132,19 +138,19 @@ export const TeamSettingsView: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-slate-900 dark:text-slate-100 text-xs">{currentUser?.name}</span>
+              <span className="font-semibold text-slate-900 dark:text-slate-100 text-xs">{liveUser?.name || currentUser?.name}</span>
               <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800">
-                {currentUser?.role}
+                {liveUser?.role || currentUser?.role}
               </span>
               <button
-                onClick={() => currentUser && setEditingAvatarUser(currentUser)}
+                onClick={() => (liveUser || currentUser) && setEditingAvatarUser(liveUser || currentUser)}
                 className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 ml-1 cursor-pointer"
               >
                 <Camera className="w-3 h-3" />
                 Change Photo
               </button>
             </div>
-            <p className="text-[11px] text-slate-400 dark:text-slate-500">{currentUser?.email}</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500">{liveUser?.email || currentUser?.email}</p>
           </div>
         </div>
       </div>

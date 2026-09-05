@@ -424,31 +424,33 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
             isDatabaseConnected: true,
           };
 
-          set(newWorkspaceData);
-
-          // Save snapshot to local storage for offline use
-          if (typeof window !== 'undefined') {
-            try {
-              localStorage.setItem('taskflow_workspace_data', JSON.stringify(newWorkspaceData));
-            } catch (_) {}
-          }
-
           // Refresh current user if exists
+          let nextCurrentUser = current;
           if (current && data.users) {
-            const updatedCurrent = data.users.find((u: User) => u.id === current.id || u.email.toLowerCase() === current.email.toLowerCase());
+            const updatedCurrent = data.users.find(
+              (u: User) =>
+                u.id === current.id ||
+                (u.email && current.email && u.email.toLowerCase() === current.email.toLowerCase())
+            );
             if (updatedCurrent) {
-              const fullUpdated = {
+              nextCurrentUser = {
                 ...current,
                 ...updatedCurrent,
                 workspaceId: updatedCurrent.workspaceId || current.workspaceId,
                 workspaceName: current.workspaceName,
               };
               if (typeof window !== 'undefined') {
-                localStorage.setItem('taskflow_user', JSON.stringify(fullUpdated));
+                try {
+                  localStorage.setItem('taskflow_user', JSON.stringify(nextCurrentUser));
+                } catch (_) {}
               }
-              set({ currentUser: fullUpdated });
             }
           }
+
+          set({
+            ...newWorkspaceData,
+            currentUser: nextCurrentUser,
+          });
         }
       }
     } catch (err) {

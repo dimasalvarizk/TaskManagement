@@ -24,6 +24,7 @@ import {
 export const Sidebar: React.FC = () => {
   const {
     currentUser,
+    users,
     projects,
     selectedProjectId,
     setSelectedProjectId,
@@ -42,6 +43,12 @@ export const Sidebar: React.FC = () => {
     promptInstallApp,
     isAppInstalled,
   } = useWorkspaceStore();
+
+  const liveUser = users.find(
+    (u) =>
+      u.id === currentUser?.id ||
+      (u.email && currentUser?.email && u.email.toLowerCase() === currentUser.email.toLowerCase())
+  ) || currentUser;
 
   const [mounted, setMounted] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
@@ -407,14 +414,16 @@ export const Sidebar: React.FC = () => {
           <div className="flex items-center justify-between p-1.5 rounded-lg hover:bg-slate-200/40 dark:hover:bg-slate-800/50 transition-colors">
             <div className="flex items-center gap-2 min-w-0">
               <img
-                src={currentUser?.avatar}
-                alt={currentUser?.name}
+                src={liveUser?.avatar || currentUser?.avatar}
+                alt={liveUser?.name || currentUser?.name}
                 className="w-6 h-6 rounded-full object-cover border border-slate-200 dark:border-slate-700 shrink-0"
               />
               <div className="truncate text-xs">
-                <div className="font-medium text-slate-800 dark:text-slate-200 truncate text-[11px]">{currentUser?.name}</div>
+                <div className="font-medium text-slate-800 dark:text-slate-200 truncate text-[11px]">
+                  {liveUser?.name || currentUser?.name}
+                </div>
                 <div className="text-[10px] text-slate-400 dark:text-slate-500">
-                  {currentUser?.role}
+                  {liveUser?.role || currentUser?.role}
                 </div>
               </div>
             </div>
