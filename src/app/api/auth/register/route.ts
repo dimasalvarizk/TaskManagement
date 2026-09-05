@@ -8,7 +8,8 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const inviteId = searchParams.get('invite');
+    const rawInviteId = searchParams.get('invite');
+    const inviteId = rawInviteId && rawInviteId !== 'undefined' && rawInviteId !== 'null' ? rawInviteId.trim() : null;
 
     // Invite verification mode
     if (inviteId) {
@@ -47,6 +48,7 @@ export async function GET(req: Request) {
       allowNewWorkspace: true,
     });
   } catch (err: any) {
+    console.error('Register GET error:', err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
@@ -54,7 +56,8 @@ export async function GET(req: Request) {
 // POST: Register new isolated workspace (Option 2) or activate invited member (Option 3)
 export async function POST(req: Request) {
   try {
-    const { name, email, password, inviteId, workspaceName } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { name, email, password, inviteId, workspaceName } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -63,39 +66,43 @@ export async function POST(req: Request) {
       );
     }
 
-    const cleanEmail = email.toLowerCase().trim();
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const cleanEmail = String(email).toLowerCase().trim();
+    const cleanInviteId = inviteId && inviteId !== 'undefined' && inviteId !== 'null' ? String(inviteId).trim() : null;
+    const hashedPassword = await bcrypt.hash(String(password), 10);
     const defaultAvatar = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
 
-    // 1. Invite Acceptance Flow (Option 3)
-    if (inviteId) {
-      let invitedUser = await prisma.user.findFirst({
-        where: { id: inviteId, status: 'invited' },
+    // 1. Invite Acceptance Flow (either explicit inviteId or email matches pending invite)
+    let invitedUser = null;
+    if (cleanInviteId) {
+      invitedUser = await prisma.user.findFirst({
+        where: { id: cleanInviteId, status: 'invited' },
         include: { workspace: true },
       });
+    }
 
-      if (!invitedUser) {
-        invitedUser = await prisma.user.findFirst({
-          where: { email: cleanEmail, status: 'invited' },
-          include: { workspace: true },
-        });
-      }
+    if (!invitedUser) {
+      invitedUser = await prisma.user.findFirst({
+        where: { email: cleanEmail, status: 'invited' },
+        include: { workspace: true },
+      });
+    }
 
-      if (!invitedUser) {
-        return NextResponse.json(
-          {
-            success: false,
-            error:
-              'Invalid or expired invitation link. Please request a new invitation from your workspace Administrator.',
-          },
-          { status: 403 }
-        );
-      }
+    if (cleanInviteId && !invitedUser) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Invalid or expired invitation link. Please request a new invitation from your workspace Administrator.',
+        },
+        { status: 403 }
+      );
+    }
 
+    // If an invited user is found, activate them in their workspace
+    if (invitedUser) {
       const activatedUser = await prisma.user.update({
         where: { id: invitedUser.id },
         data: {
-          name: name?.trim() || invitedUser.name,
+          name: name ? String(name).trim() : invitedUser.name,
           password: hashedPassword,
           status: 'active',
         },
@@ -129,7 +136,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. New Workspace Creation Flow (Option 2)
+    // 2. New Workspace Creation Flow (Self-Registration)
     const existing = await prisma.user.findUnique({
       where: { email: cleanEmail },
     });
@@ -144,7 +151,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const companyName = workspaceName?.trim() || (name ? `${name.trim()}'s Workspace` : 'ODST Workspace');
+    const companyName = workspaceName && String(workspaceName).trim() !== ''
+      ? String(workspaceName).trim()
+      : (name ? `${String(name).trim()}'s Workspace` : 'ODST Workspace');
 
     // Create isolated workspace
     const newWorkspace = await prisma.workspace.create({
@@ -156,7 +165,7 @@ export async function POST(req: Request) {
     // Create user as Admin of new workspace
     const newUser = await prisma.user.create({
       data: {
-        name: name?.trim() || 'Workspace Admin',
+        name: name ? String(name).trim() : 'Workspace Admin',
         email: cleanEmail,
         password: hashedPassword,
         avatar: defaultAvatar,
@@ -166,40 +175,42 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create starter project
-    const starterProject = await prisma.project.create({
-      data: {
-        name: 'Core Operations',
-        icon: '🚀',
-        color: 'from-indigo-500 to-purple-600',
-        description: `Main operations and task management for ${companyName}.`,
-        workspaceId: newWorkspace.id,
-      },
-    });
+    // Create starter project & task safely in background
+    try {
+      const starterProject = await prisma.project.create({
+        data: {
+          name: 'Core Operations',
+          icon: '🚀',
+          color: 'from-indigo-500 to-purple-600',
+          description: `Main operations and task management for ${companyName}.`,
+          workspaceId: newWorkspace.id,
+        },
+      });
 
-    // Create starter task
-    await prisma.task.create({
-      data: {
-        title: 'Welcome to TaskFlow Workspace!',
-        description: 'Your isolated workspace is ready. You can now invite team members, create projects, and organize your tasks.',
-        status: 'todo',
-        priority: 'high',
-        projectId: starterProject.id,
-        assigneeIds: JSON.stringify([newUser.id]),
-        tags: JSON.stringify(['Setup', 'Onboarding']),
-        dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
-      },
-    });
+      await prisma.task.create({
+        data: {
+          title: 'Welcome to TaskFlow Workspace!',
+          description: 'Your isolated workspace is ready. You can now invite team members, create projects, and organize your tasks.',
+          status: 'todo',
+          priority: 'high',
+          projectId: starterProject.id,
+          assigneeIds: JSON.stringify([newUser.id]),
+          tags: JSON.stringify(['Setup', 'Onboarding']),
+          dueDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+        },
+      });
 
-    // Log workspace creation activity
-    await prisma.activity.create({
-      data: {
-        userId: newUser.id,
-        action: 'created new workspace',
-        target: companyName,
-        workspaceId: newWorkspace.id,
-      },
-    }).catch(() => {});
+      await prisma.activity.create({
+        data: {
+          userId: newUser.id,
+          action: 'created new workspace',
+          target: companyName,
+          workspaceId: newWorkspace.id,
+        },
+      });
+    } catch (starterErr) {
+      console.warn('Starter data creation notice:', starterErr);
+    }
 
     return NextResponse.json({
       success: true,
