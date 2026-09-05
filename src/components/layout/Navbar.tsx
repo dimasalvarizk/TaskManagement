@@ -428,19 +428,6 @@ export const Navbar: React.FC = () => {
           </button>
         )}
 
-        {/* Install App Button */}
-        {(!mounted || !isAppInstalled) && (
-          <button
-            suppressHydrationWarning
-            onClick={() => promptInstallApp()}
-            className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 font-medium text-xs transition-colors cursor-pointer shadow-2xs"
-            title="Install TaskFlow App (PWA)"
-          >
-            <Download className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <span className="hidden sm:inline">Install App</span>
-          </button>
-        )}
-
         <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" />
 
         <button

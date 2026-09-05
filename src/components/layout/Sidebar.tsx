@@ -400,28 +400,6 @@ export const Sidebar: React.FC = () => {
               ))}
             </div>
           </div>
-
-          {/* Permanent PWA Install Action */}
-          {(!mounted || !isAppInstalled) && (
-            <div className="px-2.5 py-2">
-              <button
-                suppressHydrationWarning
-                onClick={() => handleItemSelect(() => promptInstallApp())}
-                className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/40 dark:to-purple-950/40 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-between transition-all group shadow-2xs cursor-pointer"
-                title="Install TaskFlow App (PWA)"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                    <Download className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="text-left min-w-0">
-                    <div className="font-semibold text-slate-800 dark:text-slate-100 text-[11px] truncate">Install TaskFlow</div>
-                    <div className="text-[9px] text-slate-400 dark:text-slate-500 truncate">Desktop & Offline App</div>
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
         </div>
 
         {/* User Footer Profile & Role Badge */}
