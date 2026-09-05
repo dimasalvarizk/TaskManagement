@@ -176,11 +176,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     closeConfirmModal: () => set({ confirmModal: null }),
   
   smtpConfig: {
-    host: 'smtp.gmail.com',
+    host: 'smtp.titan.email',
     port: '587',
     user: '',
     pass: '',
-    from: 'ODST Workspace <noreply@odst.com>',
+    from: '',
   },
   
   setSmtpConfig: (updates) =>

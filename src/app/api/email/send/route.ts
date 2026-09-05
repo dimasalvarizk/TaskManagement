@@ -14,23 +14,30 @@ export async function POST(req: NextRequest) {
     }
 
     // Resolve SMTP Configuration (from env or custom request config)
-    const host = smtpConfig?.host || process.env.SMTP_HOST || 'smtp.gmail.com';
+    const host = smtpConfig?.host || process.env.SMTP_HOST || 'smtp.titan.email';
     const port = parseInt(smtpConfig?.port || process.env.SMTP_PORT || '587', 10);
-    const secure = smtpConfig?.secure ?? (process.env.SMTP_SECURE === 'true');
-    const user = smtpConfig?.user || process.env.SMTP_USER;
-    const pass = smtpConfig?.pass || process.env.SMTP_PASS;
-    const from = smtpConfig?.from || process.env.SMTP_FROM || `"ODST Task Management" <${user || 'noreply@odst.id'}>`;
+    const secure = smtpConfig?.secure ?? (port === 465 || process.env.SMTP_SECURE === 'true');
+    const user = (smtpConfig?.user || process.env.SMTP_USER || '').trim();
+    const pass = (smtpConfig?.pass || process.env.SMTP_PASS || '').trim();
 
-    console.log(`[EMAIL API] Dispatch request to: ${to} | Subject: "${subject}"`);
+    // Ensure the From header uses the exact authenticated user email so strict SMTP servers like Titan/Gmail won't reject it
+    const from = user
+      ? `"ODST Task Management" <${user}>`
+      : (smtpConfig?.from || process.env.SMTP_FROM || `"ODST Task Management" <info@odst.id>`);
+
+    console.log(`[EMAIL API] Dispatch request to: ${to} | From: ${from} | Subject: "${subject}"`);
 
     // Check if real SMTP credentials exist
-    if (user && pass && user.trim() !== '' && pass.trim() !== '') {
+    if (user && pass) {
       // Create Nodemailer Transporter
       const transporter = nodemailer.createTransport({
         host,
         port,
         secure,
         auth: { user, pass },
+        tls: {
+          rejectUnauthorized: false,
+        },
       });
 
       // Send real email via SMTP
