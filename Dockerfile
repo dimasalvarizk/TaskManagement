@@ -1,13 +1,15 @@
 # Multi-stage Dockerfile for Next.js TaskFlow application
 FROM node:20-alpine AS base
 
-# Step 1: Install dependencies
+# Step 1: Install dependencies (including devDependencies for build)
 FROM base AS deps
-RUN apk add --no-libc6-compat
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+# Force install all dependencies for building TypeScript and Prisma
+ENV NODE_ENV=development
+RUN npm ci --include=dev
 
 # Step 2: Build the Next.js application
 FROM base AS builder
@@ -15,8 +17,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
-# Fallback DATABASE_URL for build-time generation
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+# Dummy DATABASE_URL for build-time generation
 ENV DATABASE_URL="mysql://dummy:dummy@localhost:3306/dummy"
 
 RUN npx prisma generate
@@ -26,10 +29,10 @@ RUN npm run build
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # Create a non-root user for security
 RUN addgroup --system --gid 1001 nodejs && \
