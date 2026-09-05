@@ -1,13 +1,85 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0d0d0e' },
+  ],
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://taskflow.187.52.126.215.sslip.io';
+
 export const metadata: Metadata = {
-  title: 'TaskFlow - Modern Team Task & Notion Workspace App',
-  description: 'Self-hosted modern team task management app with Notion-style docs and VPS Docker deployment.',
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'TaskFlow — Modern Team Workspace & Task Management',
+    template: '%s | TaskFlow Workspace',
+  },
+  description:
+    'TaskFlow adalah platform manajemen tugas modern, Kanban board interaktif, catatan blok (Notion-style), dan workspace kolaborasi tim oleh Manazil Al Mukhtara Group & ODST Platform.',
+  keywords: [
+    'TaskFlow',
+    'Task Management',
+    'Kanban Board',
+    'Notion Notes',
+    'Project Management',
+    'Manazil Al Mukhtara Group',
+    'ODST Platform',
+    'Team Collaboration',
+    'Aplikasi Manajemen Tugas',
+    'Self-Hosted Workspace',
+  ],
+  authors: [{ name: 'Manazil Al Mukhtara Group' }, { name: 'ODST Platform' }],
+  creator: 'Manazil Al Mukhtara Group',
+  publisher: 'ODST Platform',
+  applicationName: 'TaskFlow Workspace',
+  category: 'productivity',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'TaskFlow — Modern Team Workspace & Task Management',
+    description:
+      'All-in-one team workspace with real-time Kanban boards, Notion-style block notes, activity stream, and role permissions.',
+    url: baseUrl,
+    siteName: 'TaskFlow Workspace',
+    locale: 'id_ID',
+    type: 'website',
+    images: [
+      {
+        url: '/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'TaskFlow ODST Workspace Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TaskFlow — Modern Team Workspace',
+    description:
+      'All-in-one team workspace with real-time Kanban boards, Notion-style block notes, and role permissions.',
+    images: ['/logo.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
-    icon: '/assets/logo.png',
-    shortcut: '/assets/logo.png',
-    apple: '/assets/logo.png',
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
 };
 
@@ -16,8 +88,38 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'TaskFlow Workspace',
+    url: baseUrl,
+    applicationCategory: 'ProductivityApplication',
+    operatingSystem: 'Any',
+    browserRequirements: 'Requires JavaScript. Requires HTML5.',
+    description:
+      'Modern workspace with real-time Kanban boards, Notion-style block notes, team collaboration, and VPS Docker self-hosting.',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+    },
+    author: {
+      '@type': 'Organization',
+      name: 'Manazil Al Mukhtara Group',
+      url: baseUrl,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'ODST Platform',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${baseUrl}/logo.png`,
+      },
+    },
+  };
+
   return (
-    <html lang="en" className="light" suppressHydrationWarning>
+    <html lang="id" className="light" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -31,6 +133,10 @@ export default function RootLayout({
               } catch (_) {}
             `,
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
       <body className="antialiased select-none min-h-screen bg-neutral-50 dark:bg-[#0d0d0e] text-neutral-900 dark:text-neutral-100">
