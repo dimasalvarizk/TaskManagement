@@ -262,8 +262,19 @@ export default function LoginPage() {
               </button>
             </form>
 
-            <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              Workspace access is invite-only by Administrators.
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center text-xs text-slate-500 dark:text-slate-400 space-y-1.5">
+              <div>
+                Don&apos;t have a workspace?{' '}
+                <Link
+                  href="/register"
+                  className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline"
+                >
+                  Create New Workspace
+                </Link>
+              </div>
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                Or join an existing team via an invitation link from your Admin.
+              </p>
             </div>
           </div>
         </div>
