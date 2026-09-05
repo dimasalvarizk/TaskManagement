@@ -31,14 +31,16 @@ export const InstallModal: React.FC = () => {
 
   const handleDirectInstall = async () => {
     const promptToUse = effectivePrompt;
-    if (!promptToUse) return;
+    if (!promptToUse) {
+      setInstallModalOpen(false);
+      return;
+    }
     setIsPrompting(true);
     try {
       await promptToUse.prompt();
       const choice = await promptToUse.userChoice;
-      if (choice.outcome === 'accepted') {
+      if (choice && choice.outcome === 'accepted') {
         setIsAppInstalled(true);
-        setInstallModalOpen(false);
         if (typeof window !== 'undefined') {
           (window as any).__PWA_PROMPT__ = null;
         }
@@ -47,6 +49,7 @@ export const InstallModal: React.FC = () => {
       console.warn('Install prompt error:', err);
     } finally {
       setIsPrompting(false);
+      setInstallModalOpen(false);
     }
   };
 

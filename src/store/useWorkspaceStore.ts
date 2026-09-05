@@ -242,17 +242,25 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       try {
         await prompt.prompt();
         const choice = await prompt.userChoice;
-        if (choice.outcome === 'accepted') {
+        if (choice && choice.outcome === 'accepted') {
           set({ pwaInstallPrompt: null, isAppInstalled: true, isInstallModalOpen: false });
           if (typeof window !== 'undefined') {
             (window as any).__PWA_PROMPT__ = null;
           }
           return true;
+        } else {
+          // User chose 'dismissed' / Cancel in native prompt
+          set({ isInstallModalOpen: false });
+          return false;
         }
       } catch (e) {
         console.warn('Install prompt error:', e);
+        set({ isInstallModalOpen: false });
+        return false;
       }
     }
+
+    // Only open manual helper modal if native prompt API is completely unavailable (e.g. iOS Safari)
     set({ isInstallModalOpen: true });
     return false;
   },
