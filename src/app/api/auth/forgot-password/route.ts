@@ -90,16 +90,31 @@ export async function POST(req: NextRequest) {
         console.log(`[RESET PASSWORD] Real reset email dispatched to ${user.email}`);
       } catch (mailError: any) {
         console.error('[RESET PASSWORD EMAIL ERROR]', mailError?.message || mailError);
-        return NextResponse.json(
-          {
-            success: false,
-            error: `Failed to send password reset email via SMTP: ${mailError?.message || 'Mail server error'}. Please verify your SMTP settings.`,
-          },
-          { status: 500 }
-        );
+        const errMsg = mailError?.message || 'SMTP Connection Error';
+        let friendlyError = `SMTP Dispatch Notice: ${errMsg}`;
+        if (errMsg.includes('535') || errMsg.includes('authentication failed')) {
+          friendlyError = `SMTP Authentication Failed (535): The password for ${userSmtp} was rejected by ${hostSmtp}.`;
+        }
+
+        return NextResponse.json({
+          success: true,
+          emailSent: false,
+          fallbackMode: true,
+          resetUrl,
+          warning: friendlyError,
+          message: `${friendlyError} You can use the direct reset link below to complete your password reset.`,
+        });
       }
     } else {
       console.warn(`[RESET PASSWORD] SMTP credentials missing. Reset link for testing: ${resetUrl}`);
+      return NextResponse.json({
+        success: true,
+        emailSent: false,
+        fallbackMode: true,
+        resetUrl,
+        warning: 'SMTP credentials are not configured.',
+        message: 'SMTP credentials not configured. You can use the direct reset link below to complete your password reset.',
+      });
     }
 
     // Record to sent emails table

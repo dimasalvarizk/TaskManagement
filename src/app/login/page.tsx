@@ -40,6 +40,9 @@ export default function LoginPage() {
   const [forgotLoading, setForgotLoading] = useState(false);
   const [forgotError, setForgotError] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
+  const [forgotEmailSent, setForgotEmailSent] = useState(true);
+  const [forgotResetUrl, setForgotResetUrl] = useState('');
+  const [forgotWarning, setForgotWarning] = useState('');
   const [forgotMessage, setForgotMessage] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -75,7 +78,10 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setForgotSubmitted(true);
-        setForgotMessage(data.message || 'Password reset link has been sent to your email.');
+        setForgotEmailSent(data.emailSent ?? true);
+        setForgotResetUrl(data.resetUrl || '');
+        setForgotWarning(data.warning || '');
+        setForgotMessage(data.message || 'Password reset link has been generated.');
       } else {
         setForgotError(data.error || 'Failed to send reset link. Please make sure the email is registered.');
       }
@@ -92,6 +98,8 @@ export default function LoginPage() {
     setForgotError('');
     setForgotEmail('');
     setForgotMessage('');
+    setForgotResetUrl('');
+    setForgotWarning('');
   };
 
   return (
@@ -337,25 +345,59 @@ export default function LoginPage() {
 
             {forgotSubmitted ? (
               <div className="text-center py-4 space-y-3">
-                <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mx-auto text-emerald-500">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
+                {forgotEmailSent ? (
+                  <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mx-auto text-emerald-500">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mx-auto text-amber-500">
+                    <AlertCircle className="w-6 h-6" />
+                  </div>
+                )}
+
                 <div className="space-y-1">
                   <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    Link Sent!
+                    {forgotEmailSent ? 'Link Sent!' : 'Reset Link Generated'}
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
-                    Password reset link has been sent to <strong>{forgotEmail}</strong>.
+                    {forgotEmailSent ? (
+                      <>
+                        Password reset link has been sent to <strong>{forgotEmail}</strong>.
+                      </>
+                    ) : (
+                      <>
+                        A secure password reset link has been created for <strong>{forgotEmail}</strong>.
+                      </>
+                    )}
                   </p>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                    Please check your <strong>Inbox</strong> or <strong>Spam</strong> folder.
-                  </p>
+
+                  {forgotWarning && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/40 text-[11px] text-amber-700 dark:text-amber-300 text-left mt-2">
+                      <span className="font-semibold">Notice:</span> {forgotWarning}
+                    </div>
+                  )}
+
+                  {forgotEmailSent && (
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                      Please check your <strong>Inbox</strong> or <strong>Spam</strong> folder.
+                    </p>
+                  )}
                 </div>
-                <div className="pt-2">
+
+                <div className="pt-2 space-y-2">
+                  {forgotResetUrl && (
+                    <Link
+                      href={forgotResetUrl}
+                      onClick={closeForgotModal}
+                      className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition-colors cursor-pointer"
+                    >
+                      <span>Open Reset Password Page &rarr;</span>
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={closeForgotModal}
-                    className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition-colors cursor-pointer"
+                    className="w-full py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-medium transition-colors cursor-pointer"
                   >
                     Close
                   </button>
