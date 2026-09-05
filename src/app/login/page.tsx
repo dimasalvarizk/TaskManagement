@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
-import { Sun, Moon, Eye, EyeOff, X, Download, CheckCircle2 } from 'lucide-react';
+import { Sun, Moon, Eye, EyeOff, X, Download, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LoginPage() {
@@ -16,6 +16,7 @@ export default function LoginPage() {
     toggleTheme,
     promptInstallApp,
     isAppInstalled,
+    smtpConfig,
   } = useWorkspaceStore();
   const router = useRouter();
 
@@ -33,10 +34,13 @@ export default function LoginPage() {
     fetchWorkspaceData();
   }, [fetchWorkspaceData]);
 
-  // Forgot password modal
+  // Forgot password modal state
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
   const [forgotSubmitted, setForgotSubmitted] = useState(false);
+  const [forgotMessage, setForgotMessage] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,15 +56,42 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotSubmit = (e: React.FormEvent) => {
+  const handleForgotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!forgotEmail) return;
-    setForgotSubmitted(true);
-    setTimeout(() => {
-      setShowForgotModal(false);
-      setForgotSubmitted(false);
-      setForgotEmail('');
-    }, 2000);
+    setForgotError('');
+    setForgotLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: forgotEmail,
+          smtpConfig,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setForgotSubmitted(true);
+        setForgotMessage(data.message || 'Tautan reset password telah dikirim ke email Anda.');
+      } else {
+        setForgotError(data.error || 'Gagal mengirim tautan reset password. Pastikan email terdaftar.');
+      }
+    } catch {
+      setForgotError('Terjadi kesalahan jaringan saat mengirim tautan reset password.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
+  const closeForgotModal = () => {
+    setShowForgotModal(false);
+    setForgotSubmitted(false);
+    setForgotError('');
+    setForgotEmail('');
+    setForgotMessage('');
   };
 
   return (
@@ -285,7 +316,7 @@ export default function LoginPage() {
         <div
           suppressHydrationWarning
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
-          onClick={() => setShowForgotModal(false)}
+          onClick={closeForgotModal}
         >
           <div
             className="w-full max-w-sm bg-white dark:bg-[#181b26] border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4"
@@ -297,19 +328,38 @@ export default function LoginPage() {
               </h3>
               <button
                 suppressHydrationWarning
-                onClick={() => setShowForgotModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                onClick={closeForgotModal}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {forgotSubmitted ? (
-              <div className="text-center py-4 space-y-2">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
-                <p className="text-xs text-slate-600 dark:text-slate-300">
-                  Password reset link has been sent to <strong>{forgotEmail}</strong>
-                </p>
+              <div className="text-center py-4 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center mx-auto text-emerald-500">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                    Link Terkirim!
+                  </h4>
+                  <p className="text-xs text-slate-600 dark:text-slate-300">
+                    Tautan reset password telah dikirim ke <strong>{forgotEmail}</strong>.
+                  </p>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
+                    Silakan periksa folder <strong>Inbox</strong> atau folder <strong>Spam</strong> email Anda.
+                  </p>
+                </div>
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={closeForgotModal}
+                    className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition-colors cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </div>
               </div>
             ) : (
               <form
@@ -318,8 +368,16 @@ export default function LoginPage() {
                 className="space-y-3 text-xs"
               >
                 <p className="text-slate-500 dark:text-slate-400">
-                  Enter your email address to receive password reset instructions.
+                  Masukkan alamat email Anda untuk menerima tautan reset password.
                 </p>
+
+                {forgotError && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs border border-red-200 dark:border-red-900/50 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{forgotError}</span>
+                  </div>
+                )}
+
                 <div>
                   <input
                     suppressHydrationWarning
@@ -336,17 +394,25 @@ export default function LoginPage() {
                   <button
                     suppressHydrationWarning
                     type="button"
-                    onClick={() => setShowForgotModal(false)}
+                    onClick={closeForgotModal}
                     className="px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   >
-                    Cancel
+                    Batal
                   </button>
                   <button
                     suppressHydrationWarning
                     type="submit"
-                    className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium cursor-pointer"
+                    disabled={forgotLoading}
+                    className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    Send Link
+                    {forgotLoading ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Mengirim...</span>
+                      </>
+                    ) : (
+                      <span>Kirim Link Reset</span>
+                    )}
                   </button>
                 </div>
               </form>

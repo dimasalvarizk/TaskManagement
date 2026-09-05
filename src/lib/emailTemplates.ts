@@ -70,3 +70,41 @@ export function getTaskAssignmentEmailTemplate(taskTitle: string, assigneeName: 
 </html>
   `;
 }
+
+export function getResetPasswordEmailTemplate(name: string, email: string, resetUrl: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0d0d0d; color: #f5f5f5; margin: 0; padding: 20px; }
+    .card { max-width: 540px; margin: 0 auto; background: #121212; border: 1px solid #262626; border-radius: 16px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    .logo { width: 40px; height: 40px; background: #4f46e5; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 20px; }
+    h2 { margin: 0 0 12px; font-size: 22px; font-weight: 700; color: #ffffff; }
+    p { margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #a3a3a3; }
+    .btn { display: inline-block; padding: 12px 26px; background: #4f46e5; color: #ffffff; text-decoration: none; border-radius: 10px; font-size: 14px; font-weight: 600; margin-top: 10px; margin-bottom: 20px; }
+    .notice { padding: 12px 16px; background: #18181b; border-left: 3px solid #6366f1; border-radius: 6px; font-size: 12px; color: #9ca3af; margin-top: 16px; }
+    .footer { margin-top: 30px; border-top: 1px solid #262626; padding-top: 16px; font-size: 11px; color: #737373; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">🔑</div>
+    <h2>Reset Password Akun Anda</h2>
+    <p>Halo <strong>${name}</strong>,</p>
+    <p>Kami menerima permintaan untuk mereset password akun <strong>ODST Task Management</strong> Anda.</p>
+    <p>Silakan klik tombol di bawah ini untuk membuat password baru:</p>
+    <a href="${resetUrl}" class="btn">Reset Password Saya &rarr;</a>
+    <div class="notice">
+      ⏰ Tautan reset password ini hanya berlaku selama <strong>1 jam</strong>. Jika Anda tidak merasa meminta reset password, abaikan email ini dan akun Anda tetap aman.
+    </div>
+    <div class="footer">
+      Dikirim ke ${email} • ODST Task Management • ODST Group Indonesia
+    </div>
+  </div>
+</body>
+</html>
+  `;
+}
+
