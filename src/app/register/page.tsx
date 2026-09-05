@@ -129,6 +129,19 @@ function RegisterForm() {
         </div>
 
         <div className="flex items-center gap-2" suppressHydrationWarning>
+          {/* Prominent Install / Download App Button */}
+          {(!mounted || !isAppInstalled) && (
+            <button
+              suppressHydrationWarning
+              type="button"
+              onClick={() => promptInstallApp()}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
+              title="Download & Install TaskFlow App (PWA)"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Install App</span>
+            </button>
+          )}
 
           <button
             suppressHydrationWarning
