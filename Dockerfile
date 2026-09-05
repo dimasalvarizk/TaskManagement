@@ -1,9 +1,9 @@
 # Multi-stage Dockerfile for Next.js TaskFlow application
 FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
 
 # Step 1: Install dependencies (including devDependencies for build)
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
