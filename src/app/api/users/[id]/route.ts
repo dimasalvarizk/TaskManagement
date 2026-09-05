@@ -10,13 +10,25 @@ export async function PATCH(
     const body = await req.json();
     const { workspaceId, role, status, name, avatar } = body;
 
-    // 1. If workspaceId provided, update WorkspaceMember role/status
-    if (workspaceId && (role !== undefined || status !== undefined)) {
+    let targetUserId = id;
+    const memberObj = await prisma.workspaceMember.findFirst({
+      where: { OR: [{ id }, { userId: id }] },
+    });
+    if (memberObj) {
+      targetUserId = memberObj.userId;
+    } else if (id.includes('@')) {
+      const u = await prisma.user.findUnique({ where: { email: id.toLowerCase().trim() } });
+      if (u) targetUserId = u.id;
+    }
+
+    // 1. Update WorkspaceMember role/status
+    if (role !== undefined || status !== undefined) {
       await prisma.workspaceMember.updateMany({
         where: {
           OR: [
             { id },
-            { userId: id, workspaceId },
+            { userId: targetUserId },
+            { userId: id },
           ],
         },
         data: {
@@ -32,14 +44,6 @@ export async function PATCH(
     if (avatar !== undefined) userUpdate.avatar = avatar;
     if (role !== undefined) userUpdate.role = role;
     if (status !== undefined) userUpdate.status = status;
-
-    let targetUserId = id;
-    const memberObj = await prisma.workspaceMember.findFirst({
-      where: { OR: [{ id }, { userId: id }] },
-    });
-    if (memberObj) {
-      targetUserId = memberObj.userId;
-    }
 
     let updated = await prisma.user.update({
       where: { id: targetUserId },

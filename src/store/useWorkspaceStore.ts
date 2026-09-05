@@ -122,7 +122,7 @@ interface WorkspaceState {
   triggerNotification: (title: string, message: string, type: NotificationItem['type'], linkTaskId?: string) => void;
   
   // Team & User Permissions Actions
-  updateUserRole: (userId: string, newRole: Role) => void;
+  updateUserRole: (userId: string, newRole: Role) => Promise<void>;
   updateUserAvatar: (userId: string, avatarUrl: string) => Promise<void>;
   inviteUser: (name: string, email: string, role: Role) => Promise<{ success: boolean; realEmailSent: boolean; message: string }>;
   removeUser: (userId: string) => void;
@@ -774,23 +774,39 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     return { success: true, realEmailSent, message: resultMessage };
   },
   
-  updateUserRole: (userId, newRole) => {
+  updateUserRole: async (userId, newRole) => {
     const current = get().currentUser;
     if (current?.role !== 'Admin') return;
     
-    set((state) => ({
-      users: state.users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
-      currentUser: state.currentUser?.id === userId ? { ...state.currentUser, role: newRole } : state.currentUser,
-    }));
-    
-    // Sync to MySQL
-    fetch(`/api/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: newRole }),
-    }).catch(() => {});
+    set((state) => {
+      let updatedCurrent = state.currentUser;
+      if (state.currentUser?.id === userId) {
+        updatedCurrent = { ...state.currentUser, role: newRole };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('taskflow_user', JSON.stringify(updatedCurrent));
+          } catch (_) {}
+        }
+      }
+      return {
+        users: state.users.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
+        currentUser: updatedCurrent,
+      };
+    });
 
     get().triggerNotification('User Role Updated', `Role updated to ${newRole}.`, 'system');
+
+    // Sync to MySQL
+    try {
+      await fetch(`/api/users/${userId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: newRole, workspaceId: current?.workspaceId }),
+      });
+      await get().fetchWorkspaceData();
+    } catch (err) {
+      console.warn('Sync updateUserRole error:', err);
+    }
   },
   
   updateUserAvatar: async (userId: string, avatarUrl: string) => {
