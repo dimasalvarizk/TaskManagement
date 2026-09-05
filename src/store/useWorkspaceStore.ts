@@ -232,13 +232,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   pwaInstallPrompt: null,
   setPwaInstallPrompt: (prompt) => set({ pwaInstallPrompt: prompt }),
   promptInstallApp: async () => {
-    const prompt = get().pwaInstallPrompt;
+    let prompt = get().pwaInstallPrompt;
+    if (!prompt && typeof window !== 'undefined' && (window as any).__PWA_PROMPT__) {
+      prompt = (window as any).__PWA_PROMPT__;
+      set({ pwaInstallPrompt: prompt });
+    }
+
     if (prompt) {
       try {
         await prompt.prompt();
         const choice = await prompt.userChoice;
         if (choice.outcome === 'accepted') {
           set({ pwaInstallPrompt: null, isAppInstalled: true, isInstallModalOpen: false });
+          if (typeof window !== 'undefined') {
+            (window as any).__PWA_PROMPT__ = null;
+          }
           return true;
         }
       } catch (e) {

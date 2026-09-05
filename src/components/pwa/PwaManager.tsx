@@ -58,9 +58,21 @@ export const PwaManager: React.FC = () => {
           });
       }
 
-      // 4. Listen for PWA Install Prompt
+      // 4. Check early captured prompt and listen for new ones
+      if ((window as any).__PWA_PROMPT__) {
+        setPwaInstallPrompt((window as any).__PWA_PROMPT__);
+      }
+
+      const handlePromptCaptured = () => {
+        if ((window as any).__PWA_PROMPT__) {
+          setPwaInstallPrompt((window as any).__PWA_PROMPT__);
+        }
+      };
+      window.addEventListener('pwa-prompt-captured', handlePromptCaptured);
+
       const handleBeforeInstallPrompt = (e: Event) => {
         e.preventDefault();
+        (window as any).__PWA_PROMPT__ = e;
         setPwaInstallPrompt(e);
       };
 

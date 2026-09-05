@@ -141,6 +141,21 @@ export default function RootLayout({
                   document.documentElement.classList.remove('dark');
                 }
               } catch (_) {}
+
+              // Early PWA Install Prompt Listener (Capture before React hydration)
+              window.__PWA_PROMPT__ = null;
+              window.addEventListener('beforeinstallprompt', function(e) {
+                e.preventDefault();
+                window.__PWA_PROMPT__ = e;
+                window.dispatchEvent(new CustomEvent('pwa-prompt-captured'));
+              });
+
+              // Register Service Worker early
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function() {});
+                });
+              }
             `,
           }}
         />

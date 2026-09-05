@@ -49,17 +49,22 @@ export const InstallModal: React.FC = () => {
     }
   }, [setIsAppInstalled]);
 
-  if (!isInstallModalOpen) return null;
+  const effectivePrompt =
+    pwaInstallPrompt || (typeof window !== 'undefined' ? (window as any).__PWA_PROMPT__ : null);
 
   const handleDirectInstall = async () => {
-    if (!pwaInstallPrompt) return;
+    const promptToUse = effectivePrompt;
+    if (!promptToUse) return;
     setIsPrompting(true);
     try {
-      await pwaInstallPrompt.prompt();
-      const choice = await pwaInstallPrompt.userChoice;
+      await promptToUse.prompt();
+      const choice = await promptToUse.userChoice;
       if (choice.outcome === 'accepted') {
         setIsAppInstalled(true);
         setInstallModalOpen(false);
+        if (typeof window !== 'undefined') {
+          (window as any).__PWA_PROMPT__ = null;
+        }
       }
     } catch (err) {
       console.warn('Install prompt error:', err);
@@ -123,7 +128,7 @@ export const InstallModal: React.FC = () => {
         </div>
 
         {/* 1-Click Install Button if Prompt Ready */}
-        {pwaInstallPrompt && !isAppInstalled && (
+        {effectivePrompt && !isAppInstalled && (
           <div className="p-4 mx-5 my-3 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-xl flex items-center justify-between gap-3">
             <div>
               <div className="font-semibold text-xs text-indigo-950 dark:text-indigo-200">
