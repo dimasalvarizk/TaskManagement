@@ -263,13 +263,7 @@ export default function LoginPage() {
             </form>
 
             <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              Don&apos;t have a workspace?{' '}
-              <Link
-                href="/register"
-                className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-              >
-                Create new workspace
-              </Link>
+              Workspace access is invite-only by Administrators.
             </div>
           </div>
         </div>

@@ -2,13 +2,13 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
-import { useRouter } from 'next/navigation';
-import { Sun, Moon, Download } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Sun, Moon, Download, Shield, Lock, ArrowRight, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const {
     login,
     fetchWorkspaceData,
@@ -18,8 +18,16 @@ export default function RegisterPage() {
     isAppInstalled,
   } = useWorkspaceStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteId = searchParams ? searchParams.get('invite') || '' : '';
 
   const [mounted, setMounted] = useState(false);
+  const [checkingInvite, setCheckingInvite] = useState(true);
+  const [isInviteOnly, setIsInviteOnly] = useState(false);
+  const [inviteValid, setInviteValid] = useState(false);
+  const [isInitialSetup, setIsInitialSetup] = useState(false);
+  const [invitedRole, setInvitedRole] = useState('Member');
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,11 +36,32 @@ export default function RegisterPage() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // Verify invite status with server
+    fetch(`/api/auth/register?invite=${encodeURIComponent(inviteId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setCheckingInvite(false);
+        if (data.isInitialSetup) {
+          setIsInitialSetup(true);
+        } else if (data.isInviteOnly) {
+          setIsInviteOnly(true);
+          if (data.inviteValid && data.invite) {
+            setInviteValid(true);
+            setName(data.invite.name || '');
+            setEmail(data.invite.email || '');
+            setInvitedRole(data.invite.role || 'Member');
+          }
+        }
+      })
+      .catch(() => {
+        setCheckingInvite(false);
+      });
+  }, [inviteId]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !email || !password) return;
+    if (!email || !password) return;
     setIsLoading(true);
     setError('');
 
@@ -40,7 +69,12 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          password,
+          inviteId,
+        }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -49,11 +83,11 @@ export default function RegisterPage() {
         router.push('/');
       } else {
         setIsLoading(false);
-        setError(data.error || 'Failed to register account');
+        setError(data.error || 'Failed to complete registration');
       }
     } catch {
       setIsLoading(false);
-      setError('Registration error. Please check server.');
+      setError('Network or server error during registration.');
     }
   };
 
@@ -115,7 +149,7 @@ export default function RegisterPage() {
         </div>
       </header>
 
-      {/* 2. Main Side-by-Side Register Card */}
+      {/* 2. Main Register / Gatekeeper Card */}
       <main
         suppressHydrationWarning
         className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6"
@@ -126,7 +160,7 @@ export default function RegisterPage() {
           <div className="bg-slate-50/90 dark:bg-[#181b26]/90 p-8 sm:p-10 flex flex-col justify-between items-center text-center border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80">
             <div className="w-full flex justify-start">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
-                New Workspace
+                {isInviteOnly ? 'Private Workspace' : 'New Workspace'}
               </span>
             </div>
 
@@ -157,94 +191,150 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          {/* Right Column: Registration Form */}
+          {/* Right Column: Form or Invite-Only Gate */}
           <div className="p-8 sm:p-10 flex flex-col justify-center" suppressHydrationWarning>
-            <div className="space-y-1.5 mb-6">
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                Create Workspace
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Sign up to manage your team tasks and documents
-              </p>
-            </div>
-
-            {/* Error Alert */}
-            {error && (
-              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs border border-red-200 dark:border-red-900/50">
-                {error}
+            {checkingInvite ? (
+              <div className="text-center py-12 space-y-3">
+                <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-slate-500">Checking workspace invitation status...</p>
               </div>
+            ) : isInviteOnly && !inviteValid ? (
+              /* Public Registration Blocked Gate */
+              <div className="space-y-4 text-center py-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center mx-auto text-amber-600 dark:text-amber-400">
+                  <Lock className="w-6 h-6" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <h1 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Registration is Invite-Only
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                    This workspace is private. Only team members invited by an Administrator can register and access ODST Group Indonesia workspace.
+                  </p>
+                </div>
+
+                <div className="pt-2">
+                  <Link
+                    href="/login"
+                    className="inline-flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition-all shadow-md active:scale-95"
+                  >
+                    <span>Sign In to Existing Account</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                <p className="text-[11px] text-slate-400 dark:text-slate-500">
+                  If you received an invitation email, please click the link inside your email.
+                </p>
+              </div>
+            ) : (
+              /* Valid Invite or Initial Setup Registration Form */
+              <>
+                <div className="space-y-1.5 mb-5">
+                  <div className="flex items-center gap-1.5">
+                    {inviteValid && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                        {invitedRole} Access
+                      </span>
+                    )}
+                  </div>
+                  <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                    {inviteValid ? 'Accept Invitation' : 'Create Workspace'}
+                  </h1>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {inviteValid
+                      ? 'Complete your profile to join the workspace'
+                      : 'Set up your master administrator workspace account'}
+                  </p>
+                </div>
+
+                {/* Error Alert */}
+                {error && (
+                  <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs border border-red-200 dark:border-red-900/50">
+                    {error}
+                  </div>
+                )}
+
+                {/* Form */}
+                <form
+                  suppressHydrationWarning
+                  onSubmit={handleRegister}
+                  className="space-y-3.5 text-xs"
+                >
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      suppressHydrationWarning
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Alex Morgan"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      suppressHydrationWarning
+                      type="email"
+                      required
+                      readOnly={Boolean(inviteValid && email)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      className={`w-full px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-[#1d202b] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none transition-all border-none ${
+                        inviteValid ? 'cursor-not-allowed opacity-90' : 'hover:bg-slate-100/80 focus:ring-2 focus:ring-indigo-500'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1">
+                      Create Password
+                    </label>
+                    <input
+                      suppressHydrationWarning
+                      type="password"
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••••••"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
+                    />
+                  </div>
+
+                  <button
+                    suppressHydrationWarning
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer mt-2"
+                  >
+                    {isLoading
+                      ? 'Activating Account...'
+                      : inviteValid
+                      ? 'Join Workspace'
+                      : 'Get Started'}
+                  </button>
+                </form>
+
+                <div className="mt-5 text-center text-xs text-slate-500 dark:text-slate-400">
+                  Already registered?{' '}
+                  <Link
+                    href="/login"
+                    className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              </>
             )}
-
-            {/* Form */}
-            <form
-              suppressHydrationWarning
-              onSubmit={handleRegister}
-              className="space-y-4 text-xs"
-            >
-              <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Full Name
-                </label>
-                <input
-                  suppressHydrationWarning
-                  type="text"
-                  required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Alex Morgan"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Email Address
-                </label>
-                <input
-                  suppressHydrationWarning
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Password
-                </label>
-                <input
-                  suppressHydrationWarning
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
-                />
-              </div>
-
-              <button
-                suppressHydrationWarning
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer mt-2"
-              >
-                {isLoading ? 'Creating Account...' : 'Get Started'}
-              </button>
-            </form>
-
-            <div className="mt-6 text-center text-xs text-slate-500 dark:text-slate-400">
-              Already have an account?{' '}
-              <Link
-                href="/login"
-                className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
-              >
-                Sign In
-              </Link>
-            </div>
           </div>
         </div>
       </main>
@@ -257,5 +347,13 @@ export default function RegisterPage() {
         <span>TaskFlow Workspace &bull; ODST Group Indonesia &bull; All rights reserved.</span>
       </footer>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center text-white text-xs">Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
