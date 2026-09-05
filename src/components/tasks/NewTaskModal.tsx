@@ -26,31 +26,29 @@ export const NewTaskModal: React.FC = () => {
   const [selectedAssigneeIds, setSelectedAssigneeIds] = useState<string[]>([]);
 
   useEffect(() => {
-    if (currentUser) {
-      setSelectedAssigneeIds([currentUser.id]);
-    } else if (users.length > 0) {
-      setSelectedAssigneeIds([users[0].id]);
-    }
-  }, [currentUser, users, isNewTaskModalOpen]);
+    if (isNewTaskModalOpen) {
+      if (currentUser) {
+        setSelectedAssigneeIds([currentUser.id]);
+      } else if (users.length > 0) {
+        setSelectedAssigneeIds([users[0].id]);
+      }
 
-  useEffect(() => {
-    if (selectedProjectId) {
-      setProjectId(selectedProjectId);
-    } else if (projects.length > 0) {
-      setProjectId(projects[0].id);
+      if (selectedProjectId) {
+        setProjectId(selectedProjectId);
+      } else if (projects.length > 0) {
+        setProjectId(projects[0].id);
+      }
     }
-  }, [selectedProjectId, projects, isNewTaskModalOpen]);
+  }, [isNewTaskModalOpen]);
 
   if (!isNewTaskModalOpen || currentUser?.role === 'Viewer') return null;
 
   const toggleAssignee = (userId: string) => {
-    if (selectedAssigneeIds.includes(userId)) {
-      if (selectedAssigneeIds.length > 1) {
-        setSelectedAssigneeIds(selectedAssigneeIds.filter((id) => id !== userId));
-      }
-    } else {
-      setSelectedAssigneeIds([...selectedAssigneeIds, userId]);
-    }
+    setSelectedAssigneeIds((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
   };
 
   const handleSubmit = (e: React.FormEvent) => {
