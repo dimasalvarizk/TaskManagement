@@ -3,9 +3,13 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const workspaceId = searchParams.get('workspaceId');
+
     const projects = await prisma.project.findMany({
+      where: workspaceId ? { workspaceId } : undefined,
       orderBy: { createdAt: 'asc' },
     });
     return NextResponse.json({ success: true, projects });
@@ -20,7 +24,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { name, icon = '', color = '#6366f1', description = '' } = await req.json();
+    const { name, icon = '🚀', color = '#6366f1', description = '', workspaceId } = await req.json();
 
     if (!name) {
       return NextResponse.json(
@@ -29,12 +33,21 @@ export async function POST(req: Request) {
       );
     }
 
+    let resolvedWorkspaceId = workspaceId;
+    if (!resolvedWorkspaceId) {
+      const firstWorkspace = await prisma.workspace.findFirst({
+        orderBy: { createdAt: 'asc' },
+      });
+      resolvedWorkspaceId = firstWorkspace?.id;
+    }
+
     const project = await prisma.project.create({
       data: {
         name,
         icon,
         color,
         description,
+        workspaceId: resolvedWorkspaceId,
       },
     });
 

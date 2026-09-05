@@ -3,57 +3,102 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    let [dbUsers, dbProjects, dbTasks, dbDocs, dbActivities, dbNotifications, dbSentEmails] =
+    const { searchParams } = new URL(req.url);
+    let workspaceId = searchParams.get('workspaceId');
+    const email = searchParams.get('email');
+
+    // If no workspaceId is explicitly provided, look up by email
+    if (!workspaceId && email) {
+      const user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase().trim() },
+      });
+      if (user?.workspaceId) {
+        workspaceId = user.workspaceId;
+      }
+    }
+
+    // If still no workspaceId, resolve to the first available workspace
+    if (!workspaceId) {
+      const firstWorkspace = await prisma.workspace.findFirst({
+        orderBy: { createdAt: 'asc' },
+      });
+      if (firstWorkspace) {
+        workspaceId = firstWorkspace.id;
+      }
+    }
+
+    // Clean any legacy demo data from database
+    const demoEmails = ['admin@taskflow.io', 'member@taskflow.io', 'designer@taskflow.io', 'viewer@taskflow.io'];
+    await prisma.user.deleteMany({
+      where: { email: { in: demoEmails } },
+    }).catch(() => {});
+    await prisma.project.deleteMany({
+      where: { id: { in: ['p1', 'p2', 'p3'] } },
+    }).catch(() => {});
+
+    // If no workspace exists yet in database
+    if (!workspaceId) {
+      return NextResponse.json({
+        success: true,
+        users: [],
+        projects: [],
+        tasks: [],
+        docs: [],
+        activities: [],
+        notifications: [],
+        sentEmails: [],
+      });
+    }
+
+    // Fetch projects scoped to this workspace
+    const dbProjects = await prisma.project.findMany({
+      where: { workspaceId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    const projectIds = dbProjects.map((p) => p.id);
+
+    // Fetch all related entities scoped to this workspace
+    const [dbUsers, dbTasks, dbDocs, dbActivities, dbNotifications, dbSentEmails] =
       await Promise.all([
-        prisma.user.findMany({ orderBy: { createdAt: 'asc' } }),
-        prisma.project.findMany({ orderBy: { createdAt: 'asc' } }),
+        prisma.user.findMany({
+          where: { workspaceId },
+          orderBy: { createdAt: 'asc' },
+        }),
         prisma.task.findMany({
+          where: {
+            projectId: { in: projectIds },
+          },
           include: {
             subtasks: { orderBy: { id: 'asc' } },
             comments: { orderBy: { createdAt: 'asc' } },
           },
           orderBy: { createdAt: 'desc' },
         }),
-        prisma.document.findMany({ orderBy: { updatedAt: 'desc' } }),
-        prisma.activity.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }),
-        prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
-        prisma.sentEmail.findMany({ orderBy: { sentAt: 'desc' }, take: 20 }),
+        prisma.document.findMany({
+          where: {
+            projectId: { in: projectIds },
+          },
+          orderBy: { updatedAt: 'desc' },
+        }),
+        prisma.activity.findMany({
+          where: { workspaceId },
+          orderBy: { timestamp: 'desc' },
+          take: 30,
+        }),
+        prisma.notification.findMany({
+          where: { workspaceId },
+          orderBy: { createdAt: 'desc' },
+          take: 40,
+        }),
+        prisma.sentEmail.findMany({
+          where: { workspaceId },
+          orderBy: { sentAt: 'desc' },
+          take: 30,
+        }),
       ]);
-
-    // Clean any legacy demo data from database
-    const demoEmails = ['admin@taskflow.io', 'member@taskflow.io', 'designer@taskflow.io', 'viewer@taskflow.io'];
-    const hasDemoUsers = dbUsers.some((u) => demoEmails.includes(u.email.toLowerCase()));
-    if (hasDemoUsers) {
-      try {
-        await prisma.user.deleteMany({
-          where: { email: { in: demoEmails } },
-        });
-        await prisma.project.deleteMany({
-          where: { id: { in: ['p1', 'p2', 'p3'] } },
-        });
-        // Refetch clean data
-        [dbUsers, dbProjects, dbTasks, dbDocs, dbActivities, dbNotifications, dbSentEmails] =
-          await Promise.all([
-            prisma.user.findMany({ orderBy: { createdAt: 'asc' } }),
-            prisma.project.findMany({ orderBy: { createdAt: 'asc' } }),
-            prisma.task.findMany({
-              include: {
-                subtasks: { orderBy: { id: 'asc' } },
-                comments: { orderBy: { createdAt: 'asc' } },
-              },
-              orderBy: { createdAt: 'desc' },
-            }),
-            prisma.document.findMany({ orderBy: { updatedAt: 'desc' } }),
-            prisma.activity.findMany({ orderBy: { timestamp: 'desc' }, take: 20 }),
-            prisma.notification.findMany({ orderBy: { createdAt: 'desc' }, take: 30 }),
-            prisma.sentEmail.findMany({ orderBy: { sentAt: 'desc' }, take: 20 }),
-          ]);
-      } catch (cleanErr) {
-        console.warn('Clean demo data warning:', cleanErr);
-      }
-    }
 
     // Format tasks to parse JSON fields
     const formattedTasks = dbTasks.map((t) => ({
@@ -118,6 +163,7 @@ export async function GET() {
       avatar: u.avatar,
       role: u.role as any,
       status: u.status as any,
+      workspaceId: u.workspaceId,
     }));
 
     // Format notifications
@@ -154,6 +200,7 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
+      workspaceId,
       users: formattedUsers,
       projects: dbProjects,
       tasks: formattedTasks,

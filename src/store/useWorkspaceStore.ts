@@ -237,13 +237,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   },
   
   createProject: async (name: string, color = '#6366f1', description = '') => {
+    const current = get().currentUser;
     const tempId = 'p-' + Date.now();
     const newProject: Project = {
       id: tempId,
       name,
-      icon: '',
+      icon: '🚀',
       color,
       description,
+      workspaceId: current?.workspaceId,
     };
 
     set((state) => ({
@@ -259,7 +261,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, color, description }),
+        body: JSON.stringify({ name, color, description, workspaceId: current?.workspaceId }),
       });
       if (res.ok) {
         const data = await res.json();
@@ -321,18 +323,24 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   
   fetchWorkspaceData: async () => {
     try {
-      const res = await fetch('/api/workspace/sync');
+      const current = get().currentUser;
+      const queryParams = new URLSearchParams();
+      if (current?.workspaceId) queryParams.set('workspaceId', current.workspaceId);
+      if (current?.email) queryParams.set('email', current.email);
+
+      const url = `/api/workspace/sync${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
           const newWorkspaceData = {
-            users: data.users && data.users.length ? data.users : get().users,
-            projects: data.projects && data.projects.length ? data.projects : get().projects,
-            tasks: data.tasks && data.tasks.length ? data.tasks : get().tasks,
-            docs: data.docs && data.docs.length ? data.docs : get().docs,
-            activities: data.activities && data.activities.length ? data.activities : get().activities,
-            notifications: data.notifications && data.notifications.length ? data.notifications : get().notifications,
-            sentEmails: data.sentEmails && data.sentEmails.length ? data.sentEmails : get().sentEmails,
+            users: data.users && data.users.length ? data.users : (current ? [current] : get().users),
+            projects: data.projects || [],
+            tasks: data.tasks || [],
+            docs: data.docs || [],
+            activities: data.activities || [],
+            notifications: data.notifications || [],
+            sentEmails: data.sentEmails || [],
             isDatabaseConnected: true,
           };
 
@@ -346,14 +354,19 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
           }
 
           // Refresh current user if exists
-          const current = get().currentUser;
           if (current && data.users) {
             const updatedCurrent = data.users.find((u: User) => u.id === current.id || u.email.toLowerCase() === current.email.toLowerCase());
             if (updatedCurrent) {
+              const fullUpdated = {
+                ...current,
+                ...updatedCurrent,
+                workspaceId: updatedCurrent.workspaceId || current.workspaceId,
+                workspaceName: current.workspaceName,
+              };
               if (typeof window !== 'undefined') {
-                localStorage.setItem('taskflow_user', JSON.stringify(updatedCurrent));
+                localStorage.setItem('taskflow_user', JSON.stringify(fullUpdated));
               }
-              set({ currentUser: updatedCurrent });
+              set({ currentUser: fullUpdated });
             }
           }
         }
@@ -407,6 +420,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
           localStorage.setItem('taskflow_user', JSON.stringify(data.user));
         }
         set({ currentUser: data.user });
+        await get().fetchWorkspaceData();
         return { success: true };
       } else {
         // Fallback to local user check
@@ -436,16 +450,28 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('taskflow_user');
+      localStorage.removeItem('taskflow_workspace_data');
     }
-    set({ currentUser: null });
+    set({
+      currentUser: null,
+      projects: [],
+      tasks: [],
+      docs: [],
+      users: [],
+      activities: [],
+      notifications: [],
+      sentEmails: [],
+    });
   },
   
   switchUserRole: (role: Role) => {
     const matchedUser = get().users.find((u) => u.role === role) || get().users[0];
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('taskflow_user', JSON.stringify(matchedUser));
+    if (matchedUser) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('taskflow_user', JSON.stringify(matchedUser));
+      }
+      set({ currentUser: matchedUser });
     }
-    set({ currentUser: matchedUser });
   },
   
   toggleSound: () => set((state) => ({ isSoundEnabled: !state.isSoundEnabled })),
@@ -533,15 +559,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
       role,
       status: 'invited',
+      workspaceId: current.workspaceId,
+      workspaceName: current.workspaceName,
     };
     
-    const inviteUrl = `http://localhost:3000/login?invite=${newUser.id}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const inviteUrl = `${origin}/register?invite=${newUser.id}`;
     const emailHtml = getInvitationEmailTemplate(name, email, role, inviteUrl);
     
     const sentEmailItem: SentEmail = {
       id: 'em-' + Date.now(),
       to: email,
-      subject: `⚡ Invitation to join TaskFlow Workspace (${role})`,
+      subject: `⚡ Invitation to join ${current.workspaceName || 'TaskFlow Workspace'} (${role})`,
       html: emailHtml,
       sentAt: 'Just now',
       type: 'invitation',
@@ -554,7 +583,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     fetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, role }),
+      body: JSON.stringify({ name, email, role, workspaceId: current.workspaceId }),
     }).catch((err) => console.warn('User create sync warning:', err));
 
     try {

@@ -6,6 +6,13 @@ export type TaskStatus = 'backlog' | 'todo' | 'in_progress' | 'review' | 'done';
 
 export type NotificationType = 'task' | 'invite' | 'comment' | 'system';
 
+export interface Workspace {
+  id: string;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -13,6 +20,8 @@ export interface User {
   avatar: string;
   role: Role;
   status: 'active' | 'invited' | 'offline';
+  workspaceId?: string;
+  workspaceName?: string;
 }
 
 export interface SubTask {
@@ -56,6 +65,7 @@ export interface Project {
   icon: string;
   color: string;
   description: string;
+  workspaceId?: string;
 }
 
 export interface DocBlock {
@@ -80,6 +90,7 @@ export interface Activity {
   userId: string;
   action: string;
   target: string;
+  workspaceId?: string;
   timestamp: string;
 }
 
@@ -90,6 +101,7 @@ export interface NotificationItem {
   message: string;
   type: NotificationType;
   read: boolean;
+  workspaceId?: string;
   createdAt: string;
   linkTaskId?: string;
   linkDocId?: string;
@@ -100,6 +112,7 @@ export interface SentEmail {
   to: string;
   subject: string;
   html: string;
+  workspaceId?: string;
   sentAt: string;
   type: 'invitation' | 'task_update' | 'comment';
 }

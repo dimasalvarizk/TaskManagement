@@ -8,16 +8,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Workspace {
+  id            String         @id @default(cuid())
+  name          String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  users         User[]
+  projects      Project[]
+  activities    Activity[]
+  notifications Notification[]
+  sentEmails    SentEmail[]
+
+  @@map("workspaces")
+}
+
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String   @default("$2a$10$1r2bA.3wI6/l2.5aI/E07e4sKj40QeE5vM6/m2oQ8b.V2e5qWl7C2")
-  avatar    String   @db.Text
-  role      String   @default("Member") // Admin, Member, Viewer
-  status    String   @default("active") // active, invited, offline
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String     @id @default(cuid())
+  name        String
+  email       String     @unique
+  password    String     @default("$2a$10$1r2bA.3wI6/l2.5aI/E07e4sKj40QeE5vM6/m2oQ8b.V2e5qWl7C2")
+  avatar      String     @db.Text
+  role        String     @default("Member") // Admin, Member, Viewer
+  status      String     @default("active") // active, invited, offline
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@map("users")
 }
@@ -28,6 +44,8 @@ model Project {
   icon        String     @default("🚀")
   color       String     @default("from-indigo-500 to-purple-600")
   description String     @db.Text
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   tasks       Task[]
@@ -91,36 +109,42 @@ model Document {
 }
 
 model Activity {
-  id        String   @id @default(cuid())
-  userId    String
-  action    String
-  target    String
-  timestamp DateTime @default(now())
+  id          String     @id @default(cuid())
+  userId      String
+  action      String
+  target      String
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  timestamp   DateTime   @default(now())
 
   @@map("activities")
 }
 
 model Notification {
-  id         String   @id @default(cuid())
-  userId     String
-  title      String
-  message    String   @db.Text
-  type       String   @default("task")
-  read       Boolean  @default(false)
-  linkTaskId String?
-  linkDocId  String?
-  createdAt  DateTime @default(now())
+  id          String     @id @default(cuid())
+  userId      String
+  title       String
+  message     String     @db.Text
+  type        String     @default("task")
+  read        Boolean    @default(false)
+  linkTaskId  String?
+  linkDocId   String?
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime   @default(now())
 
   @@map("notifications")
 }
 
 model SentEmail {
-  id     String   @id @default(cuid())
-  to     String
-  subject String
-  html   String   @db.LongText
-  sentAt DateTime @default(now())
-  type   String
+  id          String     @id @default(cuid())
+  to          String
+  subject     String
+  html        String     @db.LongText
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sentAt      DateTime   @default(now())
+  type        String
 
   @@map("sent_emails")
 }
