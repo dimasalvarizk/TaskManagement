@@ -17,13 +17,13 @@ const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://taskflow.187.52.126.
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: 'TaskFlow — Modern Team Workspace & Task Management',
-    template: '%s | TaskFlow Workspace',
+    default: 'ODST Task Management — Modern Team Workspace & Project Management',
+    template: '%s | ODST Task Management',
   },
   description:
-    'TaskFlow is a modern team workspace, real-time Kanban board, Notion-style documentation platform, and collaboration suite by ODST Group Indonesia.',
+    'ODST Task Management is a modern team workspace, real-time Kanban board, Notion-style documentation platform, and collaboration suite by ODST Group Indonesia.',
   keywords: [
-    'TaskFlow',
+    'ODST Task Management',
     'Task Management',
     'Kanban Board',
     'Notion Notes',
@@ -37,17 +37,17 @@ export const metadata: Metadata = {
   authors: [{ name: 'ODST Group Indonesia' }, { name: 'ODST Platform' }],
   creator: 'ODST Group Indonesia',
   publisher: 'ODST Platform',
-  applicationName: 'TaskFlow Workspace',
+  applicationName: 'ODST Task Management',
   category: 'productivity',
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'TaskFlow — Modern Team Workspace & Task Management',
+    title: 'ODST Task Management — Modern Team Workspace & Project Management',
     description:
       'All-in-one team workspace with real-time Kanban boards, Notion-style block notes, activity stream, and role permissions.',
     url: baseUrl,
-    siteName: 'TaskFlow Workspace',
+    siteName: 'ODST Task Management',
     locale: 'en_US',
     type: 'website',
     images: [
@@ -55,13 +55,13 @@ export const metadata: Metadata = {
         url: '/logo.png',
         width: 512,
         height: 512,
-        alt: 'TaskFlow ODST Workspace Logo',
+        alt: 'ODST Task Management Logo',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TaskFlow — Modern Team Workspace',
+    title: 'ODST Task Management — Modern Team Workspace',
     description:
       'All-in-one team workspace with real-time Kanban boards, Notion-style block notes, and role permissions.',
     images: ['/logo.png'],
@@ -92,7 +92,7 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'TaskFlow Workspace',
+    name: 'ODST Task Management',
     url: baseUrl,
     applicationCategory: 'ProductivityApplication',
     operatingSystem: 'Any',
@@ -122,10 +122,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="light" suppressHydrationWarning>
       <head>
-        <meta name="application-name" content="TaskFlow" />
+        <meta name="application-name" content="ODST Task Management" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="TaskFlow" />
+        <meta name="apple-mobile-web-app-title" content="ODST Task" />
         <meta name="mobile-web-app-capable" content="yes" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

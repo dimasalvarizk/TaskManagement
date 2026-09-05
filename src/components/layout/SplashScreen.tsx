@@ -106,8 +106,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               transition={{ duration: 0.7, delay: 0.15 }}
               className="space-y-1 text-center"
             >
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-[0.3em] uppercase font-sans">
-                TASKFLOW
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-[0.25em] uppercase font-sans">
+                ODST TASK MANAGEMENT
               </h1>
               <p className="text-[11px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
                 ODST Group Indonesia

@@ -68,11 +68,11 @@ export const InstallModal: React.FC = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-xl bg-white shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1.5 shrink-0">
-              <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
+              <img src="/logo.png" alt="ODST Task Management" className="w-full h-full object-contain" />
             </div>
             <div>
               <h3 className="font-bold text-sm text-slate-900 dark:text-white">
-                Install TaskFlow
+                Install ODST Task Management
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 ODST Group Indonesia

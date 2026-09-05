@@ -26,7 +26,7 @@ function RegisterForm() {
   const [isInviteFlow, setIsInviteFlow] = useState(Boolean(inviteId));
   const [inviteValid, setInviteValid] = useState(false);
   const [invitedRole, setInvitedRole] = useState('Member');
-  const [invitedWorkspaceName, setInvitedWorkspaceName] = useState('TaskFlow Workspace');
+  const [invitedWorkspaceName, setInvitedWorkspaceName] = useState('ODST Task Management');
 
   const [name, setName] = useState('');
   const [workspaceName, setWorkspaceName] = useState('');
@@ -50,7 +50,7 @@ function RegisterForm() {
             setName(data.invite.name || '');
             setEmail(data.invite.email || '');
             setInvitedRole(data.invite.role || 'Member');
-            setInvitedWorkspaceName(data.invite.workspaceName || 'TaskFlow Workspace');
+            setInvitedWorkspaceName(data.invite.workspaceName || 'ODST Task Management');
           } else {
             setIsInviteFlow(true);
             setInviteValid(false);
@@ -118,13 +118,13 @@ function RegisterForm() {
       >
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center p-1 shrink-0 ring-1 ring-white/20">
-            <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
+            <img src="/logo.png" alt="ODST Task Management" className="w-full h-full object-contain" />
           </div>
           <div>
             <span className="font-bold text-sm text-white tracking-tight drop-shadow-sm">
-              TaskFlow
+              ODST
             </span>
-            <span className="text-[11px] text-white/70 ml-1.5 font-normal">Workspace</span>
+            <span className="text-[11px] text-white/70 ml-1.5 font-normal">Task Management</span>
           </div>
         </div>
 
@@ -136,7 +136,7 @@ function RegisterForm() {
               type="button"
               onClick={() => promptInstallApp()}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
-              title="Download & Install TaskFlow App (PWA)"
+              title="Download & Install ODST Task Management (PWA)"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Install App</span>
@@ -188,7 +188,7 @@ function RegisterForm() {
 
               <div className="space-y-1.5 max-w-xs">
                 <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-                  TaskFlow
+                  ODST Task Management
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   {isInviteFlow
@@ -405,7 +405,7 @@ function RegisterForm() {
         suppressHydrationWarning
         className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2"
       >
-        <span>TaskFlow Workspace &bull; Multi-Tenant Enterprise &bull; All rights reserved.</span>
+        <span>ODST Task Management &bull; Multi-Tenant Enterprise &bull; All rights reserved.</span>
       </footer>
     </div>
   );

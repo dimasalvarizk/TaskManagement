@@ -67,7 +67,7 @@ export default function Home() {
       <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-[#0d0d0e] text-slate-400">
         <div className="flex items-center gap-2 text-xs font-mono">
           <div className="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span>TaskFlow Workspace...</span>
+          <span>ODST Task Management...</span>
         </div>
       </div>
     );

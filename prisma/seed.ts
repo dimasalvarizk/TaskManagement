@@ -17,7 +17,7 @@ async function main() {
   if (!defaultWs) {
     defaultWs = await prisma.workspace.create({
       data: {
-        name: 'ODST Group Indonesia',
+        name: 'ODST Task Management',
       },
     });
     console.log('✅ Created default workspace:', defaultWs.name);
@@ -64,7 +64,7 @@ async function main() {
     });
   }
 
-  console.log(`🌱 TaskFlow database ready. Admin account: ${adminEmail} (password: password123)`);
+  console.log(`🌱 ODST Task Management database ready. Admin account: ${adminEmail} (password: password123)`);
 }
 
 main()

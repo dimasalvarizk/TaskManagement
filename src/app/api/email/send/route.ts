@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const secure = smtpConfig?.secure ?? (process.env.SMTP_SECURE === 'true');
     const user = smtpConfig?.user || process.env.SMTP_USER;
     const pass = smtpConfig?.pass || process.env.SMTP_PASS;
-    const from = smtpConfig?.from || process.env.SMTP_FROM || `"TaskFlow Workspace" <${user || 'noreply@taskflow.io'}>`;
+    const from = smtpConfig?.from || process.env.SMTP_FROM || `"ODST Task Management" <${user || 'noreply@odst.id'}>`;
 
     console.log(`[EMAIL API] Dispatch request to: ${to} | Subject: "${subject}"`);
 

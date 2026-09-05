@@ -676,7 +676,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     const sentEmailItem: SentEmail = {
       id: 'em-' + Date.now(),
       to: cleanEmail,
-      subject: `⚡ Invitation to join ${current.workspaceName || 'TaskFlow Workspace'} (${role})`,
+      subject: `⚡ Invitation to join ${current.workspaceName || 'ODST Task Management'} (${role})`,
       html: emailHtml,
       sentAt: 'Just now',
       type: 'invitation',

@@ -94,7 +94,7 @@ export const Sidebar: React.FC = () => {
     {
       id: 'default-m',
       workspaceId: currentUser?.workspaceId || 'default',
-      workspaceName: currentUser?.workspaceName || 'TaskFlow Workspace',
+      workspaceName: currentUser?.workspaceName || 'ODST Task Management',
       role: currentUser?.role || 'Admin',
       status: 'active' as const,
     },
@@ -136,7 +136,7 @@ export const Sidebar: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1">
                     <h1 className="font-semibold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
-                      {currentUser?.workspaceName || 'TaskFlow'}
+                      {currentUser?.workspaceName || 'ODST Task Management'}
                     </h1>
                   </div>
                   <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">

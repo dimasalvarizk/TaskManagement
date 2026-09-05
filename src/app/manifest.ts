@@ -2,8 +2,8 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'TaskFlow Workspace — ODST Group Indonesia',
-    short_name: 'TaskFlow',
+    name: 'ODST Task Management — ODST Group Indonesia',
+    short_name: 'ODST Task',
     description: 'Modern team task management, Kanban board, and Notion-style documentation platform.',
     start_url: '/',
     scope: '/',

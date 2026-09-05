@@ -136,7 +136,7 @@ self.addEventListener('fetch', (event) => {
             return appShell;
           }
           const offlinePage = await caches.match('/offline.html');
-          return offlinePage || new Response('Offline - TaskFlow Workspace', {
+          return offlinePage || new Response('Offline - ODST Task Management', {
             headers: { 'Content-Type': 'text/html' },
           });
         })

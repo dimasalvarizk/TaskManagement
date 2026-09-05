@@ -37,7 +37,7 @@ export async function GET(req: Request) {
             email: memberInvite.user?.email || '',
             role: memberInvite.role,
             workspaceId: memberInvite.workspaceId,
-            workspaceName: memberInvite.workspace?.name || 'TaskFlow Workspace',
+            workspaceName: memberInvite.workspace?.name || 'ODST Task Management',
           },
         });
       }
@@ -65,7 +65,7 @@ export async function GET(req: Request) {
             email: userInvite.email,
             role: userInvite.role,
             workspaceId: userInvite.workspaceId || '',
-            workspaceName: userInvite.workspace?.name || 'TaskFlow Workspace',
+            workspaceName: userInvite.workspace?.name || 'ODST Task Management',
           },
         });
       }

@@ -20,14 +20,14 @@ export function getInvitationEmailTemplate(name: string, email: string, role: Ro
 <body>
   <div class="card">
     <div class="logo">⚡</div>
-    <h2>You've been invited to TaskFlow Workspace</h2>
+    <h2>You've been invited to ODST Task Management</h2>
     <p>Hello <strong>${name}</strong>,</p>
-    <p>An administrator has invited you to join the <strong>TaskFlow</strong> team workspace with the following role access:</p>
+    <p>An administrator has invited you to join the <strong>ODST Task Management</strong> team workspace with the following role access:</p>
     <p><span class="badge">${role} Access</span></p>
     <p>Accept your invitation to start collaborating on team tasks, Kanban boards, and Notion documents:</p>
     <a href="${inviteUrl}" class="btn">Join Workspace &rarr;</a>
     <div class="footer">
-      Sent to ${email} • TaskFlow Secure Team Manager
+      Sent to ${email} • ODST Task Management
     </div>
   </div>
 </body>
@@ -54,7 +54,7 @@ export function getTaskAssignmentEmailTemplate(taskTitle: string, assigneeName: 
   <div class="card">
     <h2>📋 New Task Assigned to You</h2>
     <p>Hi <strong>${assigneeName}</strong>,</p>
-    <p><strong>${assignedBy}</strong> assigned you a new task in TaskFlow:</p>
+    <p><strong>${assignedBy}</strong> assigned you a new task in ODST Task Management:</p>
     <div class="task-title">${taskTitle}</div>
     <a href="http://localhost:3000" class="btn">View Task &rarr;</a>
   </div>

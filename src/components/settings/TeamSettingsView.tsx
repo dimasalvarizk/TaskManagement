@@ -90,10 +90,10 @@ export const TeamSettingsView: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: testRecipientEmail,
-          subject: 'TaskFlow - SMTP Configuration Test',
+          subject: 'ODST Task Management - SMTP Configuration Test',
           html: `
             <div style="font-family: sans-serif; background: #0f1117; color: #f8fafc; padding: 24px; border-radius: 8px;">
-              <h2 style="color: #6366f1;">TaskFlow - SMTP Configuration Successful</h2>
+              <h2 style="color: #6366f1;">ODST Task Management - SMTP Configuration Successful</h2>
               <p>Hello <strong>${testRecipientEmail}</strong>,</p>
               <p>Your SMTP email server configuration is working properly.</p>
             </div>
