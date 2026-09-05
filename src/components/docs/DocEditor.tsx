@@ -82,6 +82,7 @@ export const DocEditor: React.FC = () => {
     updateDocTitle,
     createDoc,
     deleteDoc,
+    openConfirmModal,
     selectedProjectId,
   } = useWorkspaceStore();
 
@@ -388,11 +389,15 @@ export const DocEditor: React.FC = () => {
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (window.confirm(`Are you sure you want to delete "${doc.title}"?`)) {
-                          deleteDoc(doc.id);
-                        }
+                        openConfirmModal({
+                          title: 'Hapus Dokumen',
+                          message: `Apakah Anda yakin ingin menghapus catatan "${doc.title}"?`,
+                          confirmLabel: 'Hapus Dokumen',
+                          variant: 'danger',
+                          onConfirm: () => deleteDoc(doc.id),
+                        });
                       }}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0"
+                      className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0 cursor-pointer"
                       title={`Delete ${doc.title}`}
                     >
                       <Trash2 className="w-3 h-3" />
@@ -446,9 +451,13 @@ export const DocEditor: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    if (window.confirm(`Are you sure you want to delete "${activeDoc.title}"?`)) {
-                      deleteDoc(activeDoc.id);
-                    }
+                    openConfirmModal({
+                      title: 'Hapus Dokumen',
+                      message: `Apakah Anda yakin ingin menghapus catatan "${activeDoc.title}"?`,
+                      confirmLabel: 'Hapus Dokumen',
+                      variant: 'danger',
+                      onConfirm: () => deleteDoc(activeDoc.id),
+                    });
                   }}
                   className="flex items-center gap-1 text-[11px] text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 px-2 py-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                   title="Delete this note"

@@ -24,6 +24,7 @@ export const NotificationDrawer: React.FC = () => {
     markNotificationAsRead,
     markAllNotificationsAsRead,
     clearNotifications,
+    openConfirmModal,
     setActiveTaskId,
     setEmailInspectorOpen
   } = useWorkspaceStore();
@@ -113,8 +114,17 @@ export const NotificationDrawer: React.FC = () => {
               <CheckCheck className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={clearNotifications}
-              className="p-1 rounded text-slate-400 hover:text-red-500"
+              onClick={() => {
+                if (notifications.length === 0) return;
+                openConfirmModal({
+                  title: 'Hapus Semua Notifikasi',
+                  message: 'Apakah Anda yakin ingin menghapus semua riwayat notifikasi di workspace?',
+                  confirmLabel: 'Hapus Semua',
+                  variant: 'danger',
+                  onConfirm: () => clearNotifications(),
+                });
+              }}
+              className="p-1 rounded text-slate-400 hover:text-rose-500 cursor-pointer transition-colors"
               title="Clear all"
             >
               <Trash2 className="w-3.5 h-3.5" />

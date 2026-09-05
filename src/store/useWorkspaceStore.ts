@@ -12,6 +12,16 @@ interface SMTPConfig {
   from: string;
 }
 
+export interface ConfirmModalState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  variant?: 'danger' | 'warning' | 'primary';
+  onConfirm: () => void;
+}
+
 interface WorkspaceState {
   currentUser: User | null;
   users: User[];
@@ -22,6 +32,11 @@ interface WorkspaceState {
   notifications: NotificationItem[];
   sentEmails: SentEmail[];
   isDatabaseConnected: boolean;
+  
+  // Custom Confirmation Dialog
+  confirmModal: ConfirmModalState | null;
+  openConfirmModal: (options: Omit<ConfirmModalState, 'isOpen'>) => void;
+  closeConfirmModal: () => void;
   
   // Real SMTP Configuration State
   smtpConfig: SMTPConfig;
@@ -142,6 +157,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     notifications: cachedData?.notifications && cachedData.notifications.length ? cachedData.notifications : INITIAL_NOTIFICATIONS,
     sentEmails: cachedData?.sentEmails && cachedData.sentEmails.length ? cachedData.sentEmails : INITIAL_SENT_EMAILS,
     isDatabaseConnected: false,
+
+    confirmModal: null,
+    openConfirmModal: (options) => set({ confirmModal: { ...options, isOpen: true } }),
+    closeConfirmModal: () => set({ confirmModal: null }),
   
   smtpConfig: {
     host: 'smtp.gmail.com',

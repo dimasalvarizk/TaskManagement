@@ -25,6 +25,7 @@ export const TeamSettingsView: React.FC = () => {
     inviteUser,
     removeUser,
     switchUserRole,
+    openConfirmModal,
     triggerNotification
   } = useWorkspaceStore();
 
@@ -425,8 +426,16 @@ export const TeamSettingsView: React.FC = () => {
                     <td className="py-3 px-4 text-right">
                       {isAdmin && user.id !== currentUser.id && (
                         <button
-                          onClick={() => removeUser(user.id)}
-                          className="p-1 rounded text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                          onClick={() => {
+                            openConfirmModal({
+                              title: 'Hapus Anggota Tim',
+                              message: `Apakah Anda yakin ingin menghapus "${user.name}" (${user.email}) dari tim workspace ini?`,
+                              confirmLabel: 'Hapus Anggota',
+                              variant: 'danger',
+                              onConfirm: () => removeUser(user.id),
+                            });
+                          }}
+                          className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                           title="Remove user"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

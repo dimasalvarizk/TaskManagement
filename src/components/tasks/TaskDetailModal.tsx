@@ -23,6 +23,7 @@ export const TaskDetailModal: React.FC = () => {
     setActiveTaskId,
     updateTask,
     deleteTask,
+    openConfirmModal,
     toggleSubtask,
     addComment
   } = useWorkspaceStore();
@@ -77,8 +78,19 @@ export const TaskDetailModal: React.FC = () => {
           <div className="flex items-center gap-1.5">
             {isAdmin && (
               <button
-                onClick={() => deleteTask(task.id)}
-                className="p-1.5 rounded text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                onClick={() => {
+                  openConfirmModal({
+                    title: 'Hapus Tugas',
+                    message: `Apakah Anda yakin ingin menghapus tugas "${task.title}"?`,
+                    confirmLabel: 'Hapus Tugas',
+                    variant: 'danger',
+                    onConfirm: () => {
+                      deleteTask(task.id);
+                      setActiveTaskId(null);
+                    },
+                  });
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                 title="Delete task"
               >
                 <Trash2 className="w-4 h-4" />

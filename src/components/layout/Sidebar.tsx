@@ -29,6 +29,7 @@ export const Sidebar: React.FC = () => {
     setNewProjectModalOpen,
     updateProject,
     deleteProject,
+    openConfirmModal,
     isMobileSidebarOpen,
     setMobileSidebarOpen,
     logout,
@@ -294,11 +295,15 @@ export const Sidebar: React.FC = () => {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (window.confirm(`Are you sure you want to delete project "${p.name}"? This will also remove its tasks and documents.`)) {
-                            deleteProject(p.id);
-                          }
+                          openConfirmModal({
+                            title: 'Hapus Proyek',
+                            message: `Apakah Anda yakin ingin menghapus proyek "${p.name}"? Seluruh tugas dan dokumen di dalamnya juga akan terhapus.`,
+                            confirmLabel: 'Hapus Proyek',
+                            variant: 'danger',
+                            onConfirm: () => deleteProject(p.id),
+                          });
                         }}
-                        className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                         title={`Delete ${p.name}`}
                       >
                         <Trash2 className="w-3 h-3" />

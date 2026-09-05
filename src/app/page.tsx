@@ -18,6 +18,7 @@ import { NewProjectModal } from '@/components/projects/NewProjectModal';
 import { NotificationDrawer } from '@/components/layout/NotificationDrawer';
 import { EmailPreviewModal } from '@/components/email/EmailPreviewModal';
 import { SplashScreen } from '@/components/layout/SplashScreen';
+import { ConfirmModal } from '@/components/common/ConfirmModal';
 
 export default function Home() {
   const { currentUser, activeView, fetchWorkspaceData } = useWorkspaceStore();
@@ -84,6 +85,7 @@ export default function Home() {
       <NewProjectModal />
       <NotificationDrawer />
       <EmailPreviewModal />
+      <ConfirmModal />
     </div>
   );
 }
