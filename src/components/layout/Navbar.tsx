@@ -67,6 +67,7 @@ export const Navbar: React.FC = () => {
     isAppInstalled,
   } = useWorkspaceStore();
 
+  const [mounted, setMounted] = useState(false);
   const [priorityMenuOpen, setPriorityMenuOpen] = useState(false);
   const [assigneeMenuOpen, setAssigneeMenuOpen] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -77,6 +78,7 @@ export const Navbar: React.FC = () => {
   const mobileFilterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    setMounted(true);
     setIsMac(typeof window !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0);
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -427,8 +429,9 @@ export const Navbar: React.FC = () => {
         )}
 
         {/* Install App Button */}
-        {!isAppInstalled && (
+        {(!mounted || !isAppInstalled) && (
           <button
+            suppressHydrationWarning
             onClick={() => promptInstallApp()}
             className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/60 border border-indigo-200/80 dark:border-indigo-800/80 text-indigo-700 dark:text-indigo-300 font-medium text-xs transition-colors cursor-pointer shadow-2xs"
             title="Install TaskFlow App (PWA)"
@@ -441,11 +444,16 @@ export const Navbar: React.FC = () => {
         <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1" />
 
         <button
+          suppressHydrationWarning
           onClick={toggleTheme}
           className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
-          title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+          title={mounted && theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+          {mounted && theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-amber-400" />
+          ) : (
+            <Moon className="w-4 h-4 text-slate-600" />
+          )}
         </button>
 
         <button

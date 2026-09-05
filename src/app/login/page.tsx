@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
 import { Sun, Moon, Eye, EyeOff, X, Download, CheckCircle2 } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function LoginPage() {
   } = useWorkspaceStore();
   const router = useRouter();
 
+  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('admin@taskflow.io');
   const [password, setPassword] = useState('password123');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,8 +27,9 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Fetch updated workspace users on mount
-  React.useEffect(() => {
+  // Fetch updated workspace users on mount & ensure client hydration match
+  useEffect(() => {
+    setMounted(true);
     fetchWorkspaceData();
   }, [fetchWorkspaceData]);
 
@@ -63,6 +65,7 @@ export default function LoginPage() {
 
   return (
     <div
+      suppressHydrationWarning
       className="min-h-screen relative text-slate-900 dark:text-slate-100 flex flex-col justify-between p-4 sm:p-6 bg-cover bg-center bg-no-repeat select-none"
       style={{ backgroundImage: `url('/background.png')` }}
     >
@@ -70,7 +73,10 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-slate-950/45 dark:bg-black/70 backdrop-blur-[2px] z-0" />
 
       {/* 1. Top Clean Header Navigation Bar */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 px-2">
+      <header
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 px-2"
+      >
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center p-1 shrink-0 ring-1 ring-white/20">
             <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
@@ -83,10 +89,11 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" suppressHydrationWarning>
           {/* Prominent Install / Download App Button */}
-          {!isAppInstalled && (
+          {(!mounted || !isAppInstalled) && (
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => promptInstallApp()}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
@@ -98,13 +105,14 @@ export default function LoginPage() {
           )}
 
           <button
+            suppressHydrationWarning
             type="button"
             onClick={toggleTheme}
             className="flex items-center gap-1.5 p-2 rounded-xl bg-black/40 hover:bg-black/60 text-white text-xs backdrop-blur-md transition-colors cursor-pointer border border-white/10"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? (
+            {mounted && theme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
               <Moon className="w-4 h-4 text-indigo-200" />
@@ -113,8 +121,11 @@ export default function LoginPage() {
         </div>
       </header>
 
-      {/* 2. Main Side-by-Side Login Card (Clean, Modern, Symmetrical) */}
-      <main className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6">
+      {/* 2. Main Side-by-Side Login Card */}
+      <main
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6"
+      >
         <div className="bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2">
           
           {/* Left Column: Brand Logo & Showcase */}
@@ -151,7 +162,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Column: Sign In Form */}
-          <div className="p-8 sm:p-10 flex flex-col justify-center">
+          <div className="p-8 sm:p-10 flex flex-col justify-center" suppressHydrationWarning>
             <div className="space-y-1.5 mb-6">
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Sign In
@@ -169,12 +180,17 @@ export default function LoginPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleLogin} className="space-y-4 text-xs">
+            <form
+              suppressHydrationWarning
+              onSubmit={handleLogin}
+              className="space-y-4 text-xs"
+            >
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
                   Email
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="email"
                   required
                   value={email}
@@ -190,6 +206,7 @@ export default function LoginPage() {
                     Password
                   </label>
                   <button
+                    suppressHydrationWarning
                     type="button"
                     onClick={() => setShowForgotModal(true)}
                     className="text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
@@ -199,6 +216,7 @@ export default function LoginPage() {
                 </div>
                 <div className="relative">
                   <input
+                    suppressHydrationWarning
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
@@ -207,6 +225,7 @@ export default function LoginPage() {
                     className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                   />
                   <button
+                    suppressHydrationWarning
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
@@ -216,8 +235,9 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <div className="flex items-center">
+              <div className="flex items-center" suppressHydrationWarning>
                 <input
+                  suppressHydrationWarning
                   type="checkbox"
                   id="remember"
                   checked={rememberMe}
@@ -233,6 +253,7 @@ export default function LoginPage() {
               </div>
 
               <button
+                suppressHydrationWarning
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
@@ -257,6 +278,7 @@ export default function LoginPage() {
       {/* Forgot Password Modal */}
       {showForgotModal && (
         <div
+          suppressHydrationWarning
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in"
           onClick={() => setShowForgotModal(false)}
         >
@@ -269,6 +291,7 @@ export default function LoginPage() {
                 Reset Password
               </h3>
               <button
+                suppressHydrationWarning
                 onClick={() => setShowForgotModal(false)}
                 className="p-1 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
               >
@@ -284,12 +307,17 @@ export default function LoginPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleForgotSubmit} className="space-y-3 text-xs">
+              <form
+                suppressHydrationWarning
+                onSubmit={handleForgotSubmit}
+                className="space-y-3 text-xs"
+              >
                 <p className="text-slate-500 dark:text-slate-400">
                   Enter your email address to receive password reset instructions.
                 </p>
                 <div>
                   <input
+                    suppressHydrationWarning
                     type="email"
                     required
                     placeholder="name@company.com"
@@ -301,6 +329,7 @@ export default function LoginPage() {
 
                 <div className="flex justify-end gap-2 pt-2">
                   <button
+                    suppressHydrationWarning
                     type="button"
                     onClick={() => setShowForgotModal(false)}
                     className="px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
@@ -308,6 +337,7 @@ export default function LoginPage() {
                     Cancel
                   </button>
                   <button
+                    suppressHydrationWarning
                     type="submit"
                     className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium cursor-pointer"
                   >
@@ -321,7 +351,10 @@ export default function LoginPage() {
       )}
 
       {/* 3. Clean Minimal Footer */}
-      <footer className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2">
+      <footer
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2"
+      >
         <span>TaskFlow Workspace &bull; ODST Group Indonesia &bull; All rights reserved.</span>
       </footer>
     </div>

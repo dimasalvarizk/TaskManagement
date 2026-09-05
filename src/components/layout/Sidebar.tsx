@@ -37,10 +37,15 @@ export const Sidebar: React.FC = () => {
     isAppInstalled,
   } = useWorkspaceStore();
 
+  const [mounted, setMounted] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingProjectName, setEditingProjectName] = useState<string>('');
 
   const router = useRouter();
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -295,9 +300,10 @@ export const Sidebar: React.FC = () => {
           </div>
 
           {/* Permanent PWA Install Action */}
-          {!isAppInstalled && (
+          {(!mounted || !isAppInstalled) && (
             <div className="px-2.5 py-2">
               <button
+                suppressHydrationWarning
                 onClick={() => handleItemSelect(() => promptInstallApp())}
                 className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-indigo-50/80 to-purple-50/80 dark:from-indigo-950/40 dark:to-purple-950/40 hover:from-indigo-100 hover:to-purple-100 dark:hover:from-indigo-900/50 dark:hover:to-purple-900/50 border border-indigo-200/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-between transition-all group shadow-2xs cursor-pointer"
                 title="Install TaskFlow App (PWA)"

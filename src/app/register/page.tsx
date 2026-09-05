@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
 import { Sun, Moon, Download } from 'lucide-react';
@@ -18,11 +18,17 @@ export default function RegisterPage() {
     isAppInstalled,
   } = useWorkspaceStore();
   const router = useRouter();
+
+  const [mounted, setMounted] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +59,7 @@ export default function RegisterPage() {
 
   return (
     <div
+      suppressHydrationWarning
       className="min-h-screen relative text-slate-900 dark:text-slate-100 flex flex-col justify-between p-4 sm:p-6 bg-cover bg-center bg-no-repeat select-none"
       style={{ backgroundImage: `url('/background.png')` }}
     >
@@ -60,7 +67,10 @@ export default function RegisterPage() {
       <div className="absolute inset-0 bg-slate-950/45 dark:bg-black/70 backdrop-blur-[2px] z-0" />
 
       {/* 1. Top Clean Header Navigation Bar */}
-      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 px-2">
+      <header
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 px-2"
+      >
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center p-1 shrink-0 ring-1 ring-white/20">
             <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
@@ -73,10 +83,11 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2" suppressHydrationWarning>
           {/* Prominent Install / Download App Button */}
-          {!isAppInstalled && (
+          {(!mounted || !isAppInstalled) && (
             <button
+              suppressHydrationWarning
               type="button"
               onClick={() => promptInstallApp()}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
@@ -88,13 +99,14 @@ export default function RegisterPage() {
           )}
 
           <button
+            suppressHydrationWarning
             type="button"
             onClick={toggleTheme}
             className="flex items-center gap-1.5 p-2 rounded-xl bg-black/40 hover:bg-black/60 text-white text-xs backdrop-blur-md transition-colors cursor-pointer border border-white/10"
             title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? (
+            {mounted && theme === 'dark' ? (
               <Sun className="w-4 h-4 text-amber-400" />
             ) : (
               <Moon className="w-4 h-4 text-indigo-200" />
@@ -104,7 +116,10 @@ export default function RegisterPage() {
       </header>
 
       {/* 2. Main Side-by-Side Register Card */}
-      <main className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6">
+      <main
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6"
+      >
         <div className="bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2">
           
           {/* Left Column: Brand Logo Section */}
@@ -143,7 +158,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Right Column: Registration Form */}
-          <div className="p-8 sm:p-10 flex flex-col justify-center">
+          <div className="p-8 sm:p-10 flex flex-col justify-center" suppressHydrationWarning>
             <div className="space-y-1.5 mb-6">
               <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                 Create Workspace
@@ -161,12 +176,17 @@ export default function RegisterPage() {
             )}
 
             {/* Form */}
-            <form onSubmit={handleRegister} className="space-y-4 text-xs">
+            <form
+              suppressHydrationWarning
+              onSubmit={handleRegister}
+              className="space-y-4 text-xs"
+            >
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
                   Full Name
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="text"
                   required
                   value={name}
@@ -181,6 +201,7 @@ export default function RegisterPage() {
                   Email Address
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="email"
                   required
                   value={email}
@@ -195,6 +216,7 @@ export default function RegisterPage() {
                   Password
                 </label>
                 <input
+                  suppressHydrationWarning
                   type="password"
                   required
                   value={password}
@@ -205,6 +227,7 @@ export default function RegisterPage() {
               </div>
 
               <button
+                suppressHydrationWarning
                 type="submit"
                 disabled={isLoading}
                 className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer mt-2"
@@ -227,7 +250,10 @@ export default function RegisterPage() {
       </main>
 
       {/* 3. Clean Minimal Footer */}
-      <footer className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2">
+      <footer
+        suppressHydrationWarning
+        className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2"
+      >
         <span>TaskFlow Workspace &bull; ODST Group Indonesia &bull; All rights reserved.</span>
       </footer>
     </div>
