@@ -80,9 +80,9 @@ export const TaskDetailModal: React.FC = () => {
               <button
                 onClick={() => {
                   openConfirmModal({
-                    title: 'Hapus Tugas',
-                    message: `Apakah Anda yakin ingin menghapus tugas "${task.title}"?`,
-                    confirmLabel: 'Hapus Tugas',
+                    title: 'Delete Task',
+                    message: `Are you sure you want to permanently delete task "${task.title}"?`,
+                    confirmLabel: 'Delete Task',
                     variant: 'danger',
                     onConfirm: () => {
                       deleteTask(task.id);

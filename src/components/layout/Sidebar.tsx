@@ -275,9 +275,9 @@ export const Sidebar: React.FC = () => {
                         onClick={(e) => {
                           e.stopPropagation();
                           openConfirmModal({
-                            title: 'Hapus Proyek',
-                            message: `Apakah Anda yakin ingin menghapus proyek "${p.name}"? Seluruh tugas dan dokumen di dalamnya juga akan terhapus.`,
-                            confirmLabel: 'Hapus Proyek',
+                            title: 'Delete Project',
+                            message: `Are you sure you want to delete project "${p.name}"? All associated tasks and documents will also be removed permanently.`,
+                            confirmLabel: 'Delete Project',
                             variant: 'danger',
                             onConfirm: () => deleteProject(p.id),
                           });
@@ -308,7 +308,7 @@ export const Sidebar: React.FC = () => {
                   </div>
                   <div className="text-left min-w-0">
                     <div className="font-semibold text-slate-800 dark:text-slate-100 text-[11px] truncate">Install TaskFlow</div>
-                    <div className="text-[9px] text-slate-400 dark:text-slate-500 truncate">Mode Desktop & Offline</div>
+                    <div className="text-[9px] text-slate-400 dark:text-slate-500 truncate">Desktop & Offline App</div>
                   </div>
                 </div>
               </button>

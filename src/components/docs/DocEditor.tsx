@@ -390,9 +390,9 @@ export const DocEditor: React.FC = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         openConfirmModal({
-                          title: 'Hapus Dokumen',
-                          message: `Apakah Anda yakin ingin menghapus catatan "${doc.title}"?`,
-                          confirmLabel: 'Hapus Dokumen',
+                          title: 'Delete Document',
+                          message: `Are you sure you want to delete note "${doc.title}"?`,
+                          confirmLabel: 'Delete Document',
                           variant: 'danger',
                           onConfirm: () => deleteDoc(doc.id),
                         });
@@ -452,9 +452,9 @@ export const DocEditor: React.FC = () => {
                   type="button"
                   onClick={() => {
                     openConfirmModal({
-                      title: 'Hapus Dokumen',
-                      message: `Apakah Anda yakin ingin menghapus catatan "${activeDoc.title}"?`,
-                      confirmLabel: 'Hapus Dokumen',
+                      title: 'Delete Document',
+                      message: `Are you sure you want to delete note "${activeDoc.title}"?`,
+                      confirmLabel: 'Delete Document',
                       variant: 'danger',
                       onConfirm: () => deleteDoc(activeDoc.id),
                     });

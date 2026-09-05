@@ -428,9 +428,9 @@ export const TeamSettingsView: React.FC = () => {
                         <button
                           onClick={() => {
                             openConfirmModal({
-                              title: 'Hapus Anggota Tim',
-                              message: `Apakah Anda yakin ingin menghapus "${user.name}" (${user.email}) dari tim workspace ini?`,
-                              confirmLabel: 'Hapus Anggota',
+                              title: 'Remove Team Member',
+                              message: `Are you sure you want to remove "${user.name}" (${user.email}) from this workspace team?`,
+                              confirmLabel: 'Remove Member',
                               variant: 'danger',
                               onConfirm: () => removeUser(user.id),
                             });

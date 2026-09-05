@@ -117,9 +117,9 @@ export const NotificationDrawer: React.FC = () => {
               onClick={() => {
                 if (notifications.length === 0) return;
                 openConfirmModal({
-                  title: 'Hapus Semua Notifikasi',
-                  message: 'Apakah Anda yakin ingin menghapus semua riwayat notifikasi di workspace?',
-                  confirmLabel: 'Hapus Semua',
+                  title: 'Clear All Notifications',
+                  message: 'Are you sure you want to clear all notification history in this workspace?',
+                  confirmLabel: 'Clear All',
                   variant: 'danger',
                   onConfirm: () => clearNotifications(),
                 });

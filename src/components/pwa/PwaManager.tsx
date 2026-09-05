@@ -5,11 +5,6 @@ import { Download, WifiOff, CheckCircle2, X } from 'lucide-react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { InstallModal } from './InstallModal';
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
-}
-
 export const PwaManager: React.FC = () => {
   const {
     fetchWorkspaceData,
@@ -96,7 +91,7 @@ export const PwaManager: React.FC = () => {
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 max-w-sm p-3 rounded-xl bg-amber-500/95 text-slate-950 font-medium text-xs shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-200">
           <div className="flex items-center gap-2 min-w-0">
             <WifiOff className="w-4 h-4 shrink-0" />
-            <span className="truncate">Offline Mode — Data disimpan lokal di perangkat.</span>
+            <span className="truncate">Offline Mode — Local data stored on this device.</span>
           </div>
         </div>
       )}
@@ -105,7 +100,7 @@ export const PwaManager: React.FC = () => {
       {showOnlineToast && (
         <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 max-w-sm p-3 rounded-xl bg-emerald-600 text-white font-medium text-xs shadow-2xl backdrop-blur-md flex items-center gap-2 animate-in slide-in-from-bottom-5 duration-200">
           <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-200" />
-          <span>Kembali Online — Sinkronisasi dengan database...</span>
+          <span>Back Online — Synchronizing with database...</span>
         </div>
       )}
 
@@ -121,7 +116,7 @@ export const PwaManager: React.FC = () => {
                 Install TaskFlow App
               </h4>
               <p className="text-[10px] text-slate-400 truncate">
-                Akses cepat, mode offline & desktop window
+                Instant access, offline mode & desktop window
               </p>
             </div>
           </div>
@@ -137,7 +132,7 @@ export const PwaManager: React.FC = () => {
             <button
               onClick={() => setDismissInstallBanner(true)}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              title="Tutup"
+              title="Close"
             >
               <X className="w-3.5 h-3.5" />
             </button>

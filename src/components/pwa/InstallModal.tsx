@@ -91,14 +91,14 @@ export const InstallModal: React.FC = () => {
                 </span>
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Aplikasi desktop & mobile mandiri, bekerja lancar offline & online.
+                Standalone desktop & mobile app, works seamlessly offline & online.
               </p>
             </div>
           </div>
           <button
             onClick={() => setInstallModalOpen(false)}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-            title="Tutup"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>
@@ -108,17 +108,17 @@ export const InstallModal: React.FC = () => {
         <div className="px-5 py-3 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800 flex items-center justify-around text-center gap-2">
           <div className="flex flex-col items-center gap-1">
             <WifiOff className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Akses Offline</span>
+            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Offline Access</span>
           </div>
           <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800" />
           <div className="flex flex-col items-center gap-1">
             <Zap className="w-3.5 h-3.5 text-amber-500" />
-            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Cepat & Ringan</span>
+            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Fast & Native</span>
           </div>
           <div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800" />
           <div className="flex flex-col items-center gap-1">
             <Laptop className="w-3.5 h-3.5 text-emerald-500" />
-            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Jendela Mandiri</span>
+            <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300">Window Mode</span>
           </div>
         </div>
 
@@ -127,10 +127,10 @@ export const InstallModal: React.FC = () => {
           <div className="p-4 mx-5 my-3 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-xl flex items-center justify-between gap-3">
             <div>
               <div className="font-semibold text-xs text-indigo-950 dark:text-indigo-200">
-                Browser Mendukung Instalasi Langsung
+                Browser Supports 1-Click Installation
               </div>
               <div className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80">
-                Klik tombol untuk memasang TaskFlow ke komputer / HP Anda sekarang.
+                Click the button below to install TaskFlow directly to your system.
               </div>
             </div>
             <button
@@ -139,7 +139,7 @@ export const InstallModal: React.FC = () => {
               className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
-              <span>{isPrompting ? 'Memasang...' : 'Install Sekarang'}</span>
+              <span>{isPrompting ? 'Installing...' : 'Install Now'}</span>
             </button>
           </div>
         )}
@@ -148,7 +148,7 @@ export const InstallModal: React.FC = () => {
         {isAppInstalled && (
           <div className="p-3 mx-5 my-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/80 rounded-xl flex items-center gap-2.5 text-emerald-800 dark:text-emerald-300 text-xs">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>TaskFlow sudah terpasang dan siap digunakan dari daftar aplikasi perangkat Anda.</span>
+            <span>TaskFlow is already installed and ready from your system application menu.</span>
           </div>
         )}
 
@@ -164,7 +164,7 @@ export const InstallModal: React.FC = () => {
               }`}
             >
               <Laptop className="w-3.5 h-3.5" />
-              <span>PC / Laptop (Chrome & Edge)</span>
+              <span>PC / Mac (Chrome & Edge)</span>
             </button>
             <button
               onClick={() => setActiveTab('android')}
@@ -195,7 +195,7 @@ export const InstallModal: React.FC = () => {
             {activeTab === 'desktop' && (
               <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                  Cara Pasang di Google Chrome / Microsoft Edge:
+                  How to Install on Google Chrome / Microsoft Edge:
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2.5">
@@ -204,10 +204,10 @@ export const InstallModal: React.FC = () => {
                     </span>
                     <div>
                       <span className="font-medium text-slate-800 dark:text-slate-200">
-                        Klik Ikon Install di Baris Alamat (Address Bar URL)
+                        Click the Install Icon in the URL Address Bar
                       </span>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Lihat ke pojok kanan atas bilah alamat URL browser (sebelah ikon bintang bookmark), klik ikon monitor dengan panah ke bawah{' '}
+                        Look at the right side of the browser URL bar (next to the bookmark star), click the screen icon with down arrow{' '}
                         <strong className="text-slate-700 dark:text-slate-300">"Install TaskFlow"</strong>.
                       </p>
                     </div>
@@ -219,11 +219,11 @@ export const InstallModal: React.FC = () => {
                     </span>
                     <div>
                       <span className="font-medium text-slate-800 dark:text-slate-200">
-                        Atau melalui Menu Titik Tiga (⋮)
+                        Or via the Three-Dot Menu (⋮)
                       </span>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Klik menu <strong className="text-slate-700 dark:text-slate-300">⋮</strong> di pojok kanan atas Chrome &gt; pilih{' '}
-                        <strong className="text-slate-700 dark:text-slate-300">"Simpan dan bagikan" / "Aplikasi"</strong> &gt; klik{' '}
+                        Click the <strong className="text-slate-700 dark:text-slate-300">⋮</strong> menu at top right &gt; select{' '}
+                        <strong className="text-slate-700 dark:text-slate-300">"Save and share" / "Apps"</strong> &gt; click{' '}
                         <strong className="text-indigo-600 dark:text-indigo-400">"Install TaskFlow"</strong>.
                       </p>
                     </div>
@@ -235,10 +235,10 @@ export const InstallModal: React.FC = () => {
                     </span>
                     <div>
                       <span className="font-medium text-slate-800 dark:text-slate-200">
-                        Klik "Install" pada popup konfirmasi browser
+                        Click "Install" in the browser confirmation prompt
                       </span>
                       <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                        Aplikasi TaskFlow akan langsung terbuka di jendela desktop terpisah dan ikonnya muncul di Desktop / Start Menu.
+                        TaskFlow will launch immediately in an independent, distraction-free desktop window with an icon on your Desktop/Start Menu.
                       </p>
                     </div>
                   </div>
@@ -249,7 +249,7 @@ export const InstallModal: React.FC = () => {
             {activeTab === 'android' && (
               <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                  Cara Pasang di HP Android:
+                  How to Install on Android Phone / Tablet:
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2.5">
@@ -257,7 +257,7 @@ export const InstallModal: React.FC = () => {
                       1
                     </span>
                     <div>
-                      Buka aplikasi TaskFlow di Google Chrome atau browser bawaan.
+                      Open TaskFlow in <strong>Google Chrome</strong> or your default browser.
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -265,7 +265,7 @@ export const InstallModal: React.FC = () => {
                       2
                     </span>
                     <div>
-                      Tap ikon menu <strong className="text-slate-800 dark:text-slate-200">titik tiga (⋮)</strong> di sudut kanan atas.
+                      Tap the <strong className="text-slate-800 dark:text-slate-200">three-dot menu (⋮)</strong> in the top right corner.
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -273,7 +273,7 @@ export const InstallModal: React.FC = () => {
                       3
                     </span>
                     <div>
-                      Pilih <strong className="text-indigo-600 dark:text-indigo-400">"Install aplikasi"</strong> atau <strong className="text-indigo-600 dark:text-indigo-400">"Tambahkan ke Layar Utama"</strong>.
+                      Select <strong className="text-indigo-600 dark:text-indigo-400">"Install app"</strong> or <strong className="text-indigo-600 dark:text-indigo-400">"Add to Home screen"</strong>.
                     </div>
                   </div>
                 </div>
@@ -283,7 +283,7 @@ export const InstallModal: React.FC = () => {
             {activeTab === 'ios' && (
               <div className="space-y-3 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
                 <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                  Cara Pasang di Safari (iPhone / iPad):
+                  How to Install on iOS (iPhone / iPad):
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-start gap-2.5">
@@ -291,7 +291,7 @@ export const InstallModal: React.FC = () => {
                       1
                     </span>
                     <div>
-                      Buka aplikasi TaskFlow di browser <strong>Safari</strong>.
+                      Open TaskFlow in the <strong>Safari</strong> browser.
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -299,7 +299,7 @@ export const InstallModal: React.FC = () => {
                       2
                     </span>
                     <div>
-                      Tap tombol <strong>Share / Bagikan</strong> (ikon kotak dengan panah ke atas) di bar bawah Safari.
+                      Tap the <strong>Share</strong> button (square icon with an upward arrow) in the bottom toolbar.
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
@@ -307,7 +307,7 @@ export const InstallModal: React.FC = () => {
                       3
                     </span>
                     <div>
-                      Gulir ke bawah dan tap <strong className="text-indigo-600 dark:text-indigo-400">"Add to Home Screen" (Tambah ke Layar Utama)</strong> lalu tap <strong>Add</strong> di kanan atas.
+                      Scroll down and tap <strong className="text-indigo-600 dark:text-indigo-400">"Add to Home Screen"</strong>, then tap <strong>Add</strong> at top right.
                     </div>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export const InstallModal: React.FC = () => {
             onClick={() => setInstallModalOpen(false)}
             className="px-4 py-1.5 rounded-lg bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-medium text-xs transition-colors cursor-pointer"
           >
-            Mengerti, Tutup
+            Got it, Close
           </button>
         </div>
       </div>

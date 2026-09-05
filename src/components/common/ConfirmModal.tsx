@@ -68,14 +68,14 @@ export const ConfirmModal: React.FC = () => {
               <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
                 {title}
               </h3>
-              <p className="text-[11px] text-slate-400 mt-0.5">Konfirmasi Tindakan</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Action Confirmation</p>
             </div>
           </div>
 
           <button
             onClick={closeConfirmModal}
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer shrink-0"
-            title="Tutup"
+            title="Close"
           >
             <X className="w-4 h-4" />
           </button>

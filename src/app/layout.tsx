@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     template: '%s | TaskFlow Workspace',
   },
   description:
-    'TaskFlow adalah platform manajemen tugas modern, Kanban board interaktif, catatan blok (Notion-style), dan workspace kolaborasi tim oleh Manazil Al Mukhtara Group & ODST Platform.',
+    'TaskFlow is a modern team workspace, real-time Kanban board, Notion-style documentation platform, and collaboration suite by Manazil Al Mukhtara Group & ODST Platform.',
   keywords: [
     'TaskFlow',
     'Task Management',
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     'Manazil Al Mukhtara Group',
     'ODST Platform',
     'Team Collaboration',
-    'Aplikasi Manajemen Tugas',
+    'Task Management Application',
     'Self-Hosted Workspace',
   ],
   authors: [{ name: 'Manazil Al Mukhtara Group' }, { name: 'ODST Platform' }],
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
       'All-in-one team workspace with real-time Kanban boards, Notion-style block notes, activity stream, and role permissions.',
     url: baseUrl,
     siteName: 'TaskFlow Workspace',
-    locale: 'id_ID',
+    locale: 'en_US',
     type: 'website',
     images: [
       {
@@ -120,7 +120,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="id" className="light" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <meta name="application-name" content="TaskFlow" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
