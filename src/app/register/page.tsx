@@ -10,7 +10,6 @@ import Link from 'next/link';
 
 export default function RegisterPage() {
   const {
-    inviteUser,
     login,
     fetchWorkspaceData,
     theme,
@@ -58,50 +57,58 @@ export default function RegisterPage() {
       style={{ backgroundImage: `url('/background.png')` }}
     >
       {/* Background Soft Dark Overlay */}
-      <div className="absolute inset-0 bg-slate-950/40 dark:bg-black/65 backdrop-blur-[2px] z-0" />
+      <div className="absolute inset-0 bg-slate-950/45 dark:bg-black/70 backdrop-blur-[2px] z-0" />
 
-      {/* Top Header Navigation Bar */}
-      <div className="relative z-10 w-full max-w-3xl mx-auto flex items-center justify-between py-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md flex items-center justify-center p-1.5 shadow-sm ring-1 ring-white/20">
+      {/* 1. Top Clean Header Navigation Bar */}
+      <header className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-between py-2 px-2">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center p-1 shrink-0 ring-1 ring-white/20">
             <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
           </div>
-          <span className="font-bold text-sm text-white tracking-tight drop-shadow-sm">
-            TaskFlow <span className="font-normal text-white/70 text-xs">Workspace</span>
-          </span>
+          <div>
+            <span className="font-bold text-sm text-white tracking-tight drop-shadow-sm">
+              TaskFlow
+            </span>
+            <span className="text-[11px] text-white/70 ml-1.5 font-normal">Workspace</span>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Download App Button */}
+          {/* Prominent Install / Download App Button */}
           {!isAppInstalled && (
             <button
               type="button"
               onClick={() => promptInstallApp()}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
               title="Download & Install TaskFlow App (PWA)"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Download App</span>
+              <span>Install App</span>
             </button>
           )}
 
           <button
             type="button"
             onClick={toggleTheme}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/40 hover:bg-black/60 text-white text-xs backdrop-blur-md transition-colors cursor-pointer border border-white/10"
+            className="flex items-center gap-1.5 p-2 rounded-xl bg-black/40 hover:bg-black/60 text-white text-xs backdrop-blur-md transition-colors cursor-pointer border border-white/10"
+            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-200" />}
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-200" />
+            )}
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* Main Side-by-Side Register Card (Flat & Borderless, No Shadow) */}
-      <div className="relative z-10 w-full max-w-3xl mx-auto my-auto py-4">
-        <div className="bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md rounded-3xl overflow-hidden grid grid-cols-1 md:grid-cols-2">
+      {/* 2. Main Side-by-Side Register Card */}
+      <main className="relative z-10 w-full max-w-3xl mx-auto my-auto py-6">
+        <div className="bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl border border-white/20 dark:border-slate-800/80 grid grid-cols-1 md:grid-cols-2">
           
           {/* Left Column: Brand Logo Section */}
-          <div className="bg-slate-50/90 dark:bg-[#181b26]/90 p-8 sm:p-10 flex flex-col justify-between items-center text-center">
+          <div className="bg-slate-50/90 dark:bg-[#181b26]/90 p-8 sm:p-10 flex flex-col justify-between items-center text-center border-b md:border-b-0 md:border-r border-slate-100 dark:border-slate-800/80">
             <div className="w-full flex justify-start">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 dark:text-indigo-400">
                 New Workspace
@@ -109,40 +116,28 @@ export default function RegisterPage() {
             </div>
 
             <div className="my-auto py-6 flex flex-col items-center space-y-4">
-              {/* Logo (No Border, No Shadow) */}
+              {/* Logo */}
               <div className="w-28 h-28 p-2 flex items-center justify-center">
                 <img
                   src="/assets/logo.png"
                   alt="Company Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain drop-shadow-sm"
                 />
               </div>
 
-              <div className="space-y-1">
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">
-                  DST TaskFlow
+              <div className="space-y-1.5 max-w-xs">
+                <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+                  TaskFlow
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px] leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Enterprise Task & Document Workspace for ODST Group Indonesia
                 </p>
               </div>
-
-              {/* Install Button on Left Card */}
-              {!isAppInstalled && (
-                <button
-                  type="button"
-                  onClick={() => promptInstallApp()}
-                  className="mt-1 py-1.5 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Desktop App</span>
-                </button>
-              )}
             </div>
 
             <div className="w-full text-center">
-              <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
-                v2.0 &bull; Fast & Minimal
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                v2.0 &bull; ODST Group Indonesia
               </span>
             </div>
           </div>
@@ -154,16 +149,18 @@ export default function RegisterPage() {
                 Create Workspace
               </h1>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Register an administrator account for your team
+                Sign up to manage your team tasks and documents
               </p>
             </div>
 
+            {/* Error Alert */}
             {error && (
-              <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs">
+              <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs border border-red-200 dark:border-red-900/50">
                 {error}
               </div>
             )}
 
+            {/* Form */}
             <form onSubmit={handleRegister} className="space-y-4 text-xs">
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
@@ -172,23 +169,23 @@ export default function RegisterPage() {
                 <input
                   type="text"
                   required
-                  placeholder="Alex Morgan"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  placeholder="Alex Morgan"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                 />
               </div>
 
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Work Email
+                  Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                 />
               </div>
@@ -200,9 +197,9 @@ export default function RegisterPage() {
                 <input
                   type="password"
                   required
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
                   className="w-full px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                 />
               </div>
@@ -210,9 +207,9 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs transition-colors disabled:opacity-60 flex items-center justify-center gap-2 border-none cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer mt-2"
               >
-                {isLoading ? 'Creating account...' : 'Create & Get Started'}
+                {isLoading ? 'Creating Account...' : 'Get Started'}
               </button>
             </form>
 
@@ -222,35 +219,17 @@ export default function RegisterPage() {
                 href="/login"
                 className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
               >
-                Sign in here
+                Sign In
               </Link>
             </div>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Footer with Theme Toggle */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto flex items-center justify-between text-[11px] text-white/80 py-2">
-        <span>TaskFlow Workspace &bull; All rights reserved.</span>
-        <button
-          type="button"
-          onClick={toggleTheme}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-black/30 hover:bg-black/50 text-white text-xs backdrop-blur-xs transition-colors cursor-pointer border-none"
-          aria-label="Toggle theme"
-        >
-          {theme === 'dark' ? (
-            <>
-              <Sun className="w-3.5 h-3.5 text-amber-400" />
-              <span>Light Mode</span>
-            </>
-          ) : (
-            <>
-              <Moon className="w-3.5 h-3.5 text-indigo-300" />
-              <span>Dark Mode</span>
-            </>
-          )}
-        </button>
-      </div>
+      {/* 3. Clean Minimal Footer */}
+      <footer className="relative z-10 w-full max-w-6xl mx-auto flex items-center justify-center text-[11px] text-white/70 py-2">
+        <span>TaskFlow Workspace &bull; ODST Group Indonesia &bull; All rights reserved.</span>
+      </footer>
     </div>
   );
 }
