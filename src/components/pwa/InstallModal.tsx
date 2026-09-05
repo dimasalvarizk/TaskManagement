@@ -67,7 +67,7 @@ export const InstallModal: React.FC = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-indigo-900/40 flex items-center justify-center p-1.5 shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-white shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center p-1.5 shrink-0">
               <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
             </div>
             <div>
