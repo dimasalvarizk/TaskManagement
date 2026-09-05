@@ -116,43 +116,7 @@ export const PwaManager: React.FC = () => {
         </div>
       )}
 
-      {/* 3. Floating Quick Install Banner */}
-      {pwaInstallPrompt && !isAppInstalled && !dismissInstallBanner && !isOffline && (
-        <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 z-50 max-w-sm p-3.5 rounded-2xl bg-white dark:bg-[#181a24] border border-slate-200 dark:border-neutral-800 shadow-2xl backdrop-blur-md flex items-center justify-between gap-3 animate-in slide-in-from-bottom-5 duration-200 select-none">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 p-1 flex items-center justify-center shrink-0 border border-indigo-200 dark:border-indigo-800">
-              <img src="/logo.png" alt="TaskFlow" className="w-6 h-6 object-contain" />
-            </div>
-            <div className="min-w-0">
-              <h4 className="font-semibold text-xs text-slate-900 dark:text-white truncate">
-                Install TaskFlow App
-              </h4>
-              <p className="text-[10px] text-slate-400 truncate">
-                Instant access, offline mode & desktop window
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-1.5 shrink-0">
-            <button
-              onClick={() => promptInstallApp()}
-              className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Install</span>
-            </button>
-            <button
-              onClick={() => setDismissInstallBanner(true)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
-              title="Close"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 4. Complete Step-by-Step PWA Install Guide Modal */}
+      {/* 3. Install Dialog */}
       <InstallModal />
     </>
   );
