@@ -1000,6 +1000,11 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     const current = get().currentUser;
     if (current?.role === 'Viewer') return;
     
+    let targetProjectId = projectId;
+    if (!targetProjectId || targetProjectId === 'all') {
+      targetProjectId = get().projects[0]?.id || '';
+    }
+
     const tempId = 'doc-' + Date.now();
     const defaultBlocks = [
       { id: 'b1', type: 'h1' as const, content: title || 'Untitled Note' },
@@ -1008,7 +1013,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
 
     const newDoc: Document = {
       id: tempId,
-      projectId,
+      projectId: targetProjectId,
       title: title || 'Untitled Note',
       icon: '📄',
       updatedAt: new Date().toISOString().split('T')[0],
@@ -1031,7 +1036,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title || 'Untitled Note',
-          projectId,
+          projectId: targetProjectId,
           icon: '📄',
           authorId: current?.id || 'u1',
           blocks: defaultBlocks,

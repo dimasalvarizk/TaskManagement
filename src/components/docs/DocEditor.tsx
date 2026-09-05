@@ -99,10 +99,8 @@ export const DocEditor: React.FC = () => {
 
   const inputRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
-  if (!activeDoc) return null;
-
   const handleContentChange = (blockId: string, content: string) => {
-    if (isViewer) return;
+    if (isViewer || !activeDoc) return;
 
     // Auto-detect markdown shorthand prefixes:
     if (content === '[] ' || content === '[ ] ') {
@@ -141,6 +139,7 @@ export const DocEditor: React.FC = () => {
   };
 
   const changeBlockType = (blockId: string, newType: DocBlock['type'], content?: string) => {
+    if (!activeDoc) return;
     const updatedBlocks = activeDoc.blocks.map((b) => {
       if (b.id !== blockId) return b;
       return {
@@ -156,13 +155,14 @@ export const DocEditor: React.FC = () => {
   };
 
   const handleSelectSlashCommand = (blockId: string, newType: DocBlock['type']) => {
+    if (!activeDoc) return;
     const targetBlock = activeDoc.blocks.find((b) => b.id === blockId);
     const cleanContent = (targetBlock?.content || '').replace(/\/$/, '').trim();
     changeBlockType(blockId, newType, cleanContent);
   };
 
   const handleToggleTodo = (blockId: string) => {
-    if (isViewer) return;
+    if (isViewer || !activeDoc) return;
     const updatedBlocks = activeDoc.blocks.map((b) =>
       b.id === blockId ? { ...b, checked: !b.checked } : b
     );
@@ -174,7 +174,7 @@ export const DocEditor: React.FC = () => {
     block: DocBlock,
     index: number
   ) => {
-    if (isViewer) return;
+    if (isViewer || !activeDoc) return;
 
     // Press ENTER: Create new block below
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -219,7 +219,7 @@ export const DocEditor: React.FC = () => {
   };
 
   const handleAddBlock = (afterBlockId?: string, type: DocBlock['type'] = 'paragraph') => {
-    if (isViewer) return;
+    if (isViewer || !activeDoc) return;
     const newBlock: DocBlock = {
       id: 'b-' + Date.now(),
       type,
@@ -245,7 +245,7 @@ export const DocEditor: React.FC = () => {
   };
 
   const handleDeleteBlock = (blockId: string) => {
-    if (isViewer || activeDoc.blocks.length <= 1) return;
+    if (isViewer || !activeDoc || activeDoc.blocks.length <= 1) return;
     const updatedBlocks = activeDoc.blocks.filter((b) => b.id !== blockId);
     updateDocBlocks(activeDoc.id, updatedBlocks);
   };
@@ -312,135 +312,172 @@ export const DocEditor: React.FC = () => {
         </div>
 
         <div className="space-y-0.5 overflow-y-auto max-h-[calc(100vh-120px)]">
-          {docs.map((doc) => (
-            <div
-              key={doc.id}
-              onClick={() => {
-                setActiveDocId(doc.id);
-                if (typeof window !== 'undefined' && window.innerWidth < 768) {
-                  setIsMobileDocListOpen(false);
-                }
-              }}
-              onDoubleClick={(e) => {
-                if (isViewer) return;
-                e.stopPropagation();
-                setEditingDocId(doc.id);
-                setEditingDocTitle(doc.title);
-              }}
-              className={`group w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                activeDoc.id === doc.id
-                  ? 'bg-slate-200/70 dark:bg-slate-800 text-slate-900 dark:text-white'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              {editingDocId === doc.id ? (
-                <div
-                  className="flex items-center gap-1.5 flex-1 min-w-0"
-                  onClick={(e) => e.stopPropagation()}
+          {docs.length === 0 ? (
+            <div className="text-center py-6 px-2 space-y-2 select-none">
+              <p className="text-[11px] text-slate-400 dark:text-slate-500">No documents yet</p>
+              {!isViewer && (
+                <button
+                  onClick={() => createDoc('Untitled Document', selectedProjectId || 'p1')}
+                  className="inline-flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold cursor-pointer"
                 >
-                  <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <input
-                    type="text"
-                    autoFocus
-                    value={editingDocTitle}
-                    onChange={(e) => setEditingDocTitle(e.target.value)}
-                    onBlur={() => {
-                      if (editingDocTitle.trim() && editingDocTitle.trim() !== doc.title) {
-                        updateDocTitle(doc.id, editingDocTitle.trim());
-                      }
-                      setEditingDocId(null);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                  <Plus className="w-3 h-3" />
+                  <span>Create note</span>
+                </button>
+              )}
+            </div>
+          ) : (
+            docs.map((doc) => (
+              <div
+                key={doc.id}
+                onClick={() => {
+                  setActiveDocId(doc.id);
+                  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+                    setIsMobileDocListOpen(false);
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  if (isViewer) return;
+                  e.stopPropagation();
+                  setEditingDocId(doc.id);
+                  setEditingDocTitle(doc.title);
+                }}
+                className={`group w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
+                  activeDoc?.id === doc.id
+                    ? 'bg-slate-200/70 dark:bg-slate-800 text-slate-900 dark:text-white'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/40 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                {editingDocId === doc.id ? (
+                  <div
+                    className="flex items-center gap-1.5 flex-1 min-w-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={editingDocTitle}
+                      onChange={(e) => setEditingDocTitle(e.target.value)}
+                      onBlur={() => {
                         if (editingDocTitle.trim() && editingDocTitle.trim() !== doc.title) {
                           updateDocTitle(doc.id, editingDocTitle.trim());
                         }
                         setEditingDocId(null);
-                      } else if (e.key === 'Escape') {
-                        setEditingDocId(null);
-                      }
-                    }}
-                    className="w-full px-1.5 py-0.5 text-xs bg-white dark:bg-slate-900 border border-indigo-500 rounded text-slate-900 dark:text-white focus:outline-none shadow-xs"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 truncate flex-1 min-w-0">
-                  <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                  <span className="truncate text-left" title="Double click to rename">{doc.title}</span>
-                </div>
-              )}
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (editingDocTitle.trim() && editingDocTitle.trim() !== doc.title) {
+                            updateDocTitle(doc.id, editingDocTitle.trim());
+                          }
+                          setEditingDocId(null);
+                        } else if (e.key === 'Escape') {
+                          setEditingDocId(null);
+                        }
+                      }}
+                      className="w-full px-1.5 py-0.5 text-xs bg-white dark:bg-slate-900 border border-indigo-500 rounded text-slate-900 dark:text-white focus:outline-none shadow-xs"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 truncate flex-1 min-w-0">
+                    <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate text-left" title="Double click to rename">{doc.title}</span>
+                  </div>
+                )}
 
-              {!isViewer && editingDocId !== doc.id && (
-                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingDocId(doc.id);
-                      setEditingDocTitle(doc.title);
-                    }}
-                    className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
-                    title="Rename note (or double click)"
-                  >
-                    <Pencil className="w-3 h-3" />
-                  </button>
-                  {docs.length > 1 && (
+                {!isViewer && editingDocId !== doc.id && (
+                  <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all shrink-0">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        openConfirmModal({
-                          title: 'Delete Document',
-                          message: `Are you sure you want to delete note "${doc.title}"?`,
-                          confirmLabel: 'Delete Document',
-                          variant: 'danger',
-                          onConfirm: () => deleteDoc(doc.id),
-                        });
+                        setEditingDocId(doc.id);
+                        setEditingDocTitle(doc.title);
                       }}
-                      className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0 cursor-pointer"
-                      title={`Delete ${doc.title}`}
+                      className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
+                      title="Rename note (or double click)"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Pencil className="w-3 h-3" />
                     </button>
-                  )}
-                </div>
-              )}
-            </div>
-          ))}
+                    {docs.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openConfirmModal({
+                            title: 'Delete Document',
+                            message: `Are you sure you want to delete note "${doc.title}"?`,
+                            confirmLabel: 'Delete Document',
+                            variant: 'danger',
+                            onConfirm: () => deleteDoc(doc.id),
+                          });
+                        }}
+                        className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0 cursor-pointer"
+                        title={`Delete ${doc.title}`}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </div>
 
       {/* Main Document Content Area */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-3xl mx-auto space-y-5 w-full">
-        {/* Mobile Notes Drawer Open Toggle */}
-        <button
-          onClick={() => setIsMobileDocListOpen(true)}
-          className="md:hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-neutral-700 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
-        >
-          <FileText className="w-3.5 h-3.5 text-indigo-500" />
-          <span>Switch Note ({docs.length} notes)</span>
-        </button>
+      {!activeDoc ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none bg-slate-50/50 dark:bg-transparent">
+          <div className="w-16 h-16 rounded-3xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/80 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-4 shadow-sm">
+            <FileText className="w-8 h-8" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-1.5">
+            No Documents in this Workspace
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mb-6 leading-relaxed">
+            Create project specifications, team wikis, meeting notes, guidelines, or knowledge base documents.
+          </p>
+          {!isViewer && (
+            <button
+              onClick={() => createDoc('Untitled Document', selectedProjectId || 'p1')}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-md transition-all active:scale-95 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Create First Document</span>
+            </button>
+          )}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-3xl mx-auto space-y-5 w-full">
+          {/* Mobile Notes Drawer Open Toggle */}
+          <button
+            onClick={() => setIsMobileDocListOpen(true)}
+            className="md:hidden inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-slate-100 dark:bg-neutral-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-neutral-700 hover:bg-slate-200 dark:hover:bg-neutral-700 transition-colors cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5 text-indigo-500" />
+            <span>Switch Note ({docs.length} notes)</span>
+          </button>
 
-        {/* Document Header */}
-        <div className="space-y-2 border-b border-slate-200 dark:border-neutral-800 pb-4">
-          <input
-            type="text"
-            disabled={isViewer}
-            value={activeDoc.title}
-            placeholder="Untitled Document"
-            onChange={(e) => {
-              const updatedDocs = docs.map((d) =>
-                d.id === activeDoc.id ? { ...d, title: e.target.value } : d
-              );
-              useWorkspaceStore.setState({ docs: updatedDocs });
-            }}
-            onBlur={(e) => {
-              if (e.target.value.trim()) {
-                updateDocTitle(activeDoc.id, e.target.value.trim());
-              }
-            }}
-            className="text-2xl font-bold bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none w-full tracking-tight"
-          />
+          {/* Document Header */}
+          <div className="space-y-2 border-b border-slate-200 dark:border-neutral-800 pb-4">
+            <input
+              type="text"
+              disabled={isViewer}
+              value={activeDoc.title}
+              placeholder="Untitled Document"
+              onChange={(e) => {
+                const updatedDocs = docs.map((d) =>
+                  d.id === activeDoc.id ? { ...d, title: e.target.value } : d
+                );
+                useWorkspaceStore.setState({ docs: updatedDocs });
+              }}
+              onBlur={(e) => {
+                if (e.target.value.trim()) {
+                  updateDocTitle(activeDoc.id, e.target.value.trim());
+                }
+              }}
+              className="text-2xl font-bold bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none w-full tracking-tight"
+            />
           <div className="flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-mono">
             <span>Updated {formatDocDate(activeDoc.updatedAt)}</span>
             <div className="flex items-center gap-2">
@@ -705,6 +742,7 @@ export const DocEditor: React.FC = () => {
           </div>
         )}
       </div>
+      )}
     </div>
   );
 };
