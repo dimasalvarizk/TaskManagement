@@ -5,11 +5,19 @@ export const dynamic = 'force-dynamic';
 import React, { useState } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Download } from 'lucide-react';
 import Link from 'next/link';
 
 export default function RegisterPage() {
-  const { inviteUser, login, fetchWorkspaceData, theme, toggleTheme } = useWorkspaceStore();
+  const {
+    inviteUser,
+    login,
+    fetchWorkspaceData,
+    theme,
+    toggleTheme,
+    promptInstallApp,
+    isAppInstalled,
+  } = useWorkspaceStore();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -52,8 +60,41 @@ export default function RegisterPage() {
       {/* Background Soft Dark Overlay */}
       <div className="absolute inset-0 bg-slate-950/40 dark:bg-black/65 backdrop-blur-[2px] z-0" />
 
-      {/* Top Spacer */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto h-6" />
+      {/* Top Header Navigation Bar */}
+      <div className="relative z-10 w-full max-w-3xl mx-auto flex items-center justify-between py-2">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-white/95 dark:bg-[#141620]/95 backdrop-blur-md flex items-center justify-center p-1.5 shadow-sm ring-1 ring-white/20">
+            <img src="/logo.png" alt="TaskFlow" className="w-full h-full object-contain" />
+          </div>
+          <span className="font-bold text-sm text-white tracking-tight drop-shadow-sm">
+            TaskFlow <span className="font-normal text-white/70 text-xs">Workspace</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Download App Button */}
+          {!isAppInstalled && (
+            <button
+              type="button"
+              onClick={() => promptInstallApp()}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold backdrop-blur-md transition-all shadow-md hover:scale-[1.02] active:scale-95 cursor-pointer border border-indigo-400/40"
+              title="Download & Install TaskFlow App (PWA)"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download App</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/40 hover:bg-black/60 text-white text-xs backdrop-blur-md transition-colors cursor-pointer border border-white/10"
+            aria-label="Toggle theme"
+          >
+            {theme === 'dark' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-200" />}
+          </button>
+        </div>
+      </div>
 
       {/* Main Side-by-Side Register Card (Flat & Borderless, No Shadow) */}
       <div className="relative z-10 w-full max-w-3xl mx-auto my-auto py-4">
@@ -85,6 +126,18 @@ export default function RegisterPage() {
                   Enterprise Task & Document Workspace for ODST Group Indonesia
                 </p>
               </div>
+
+              {/* Install Button on Left Card */}
+              {!isAppInstalled && (
+                <button
+                  type="button"
+                  onClick={() => promptInstallApp()}
+                  className="mt-1 py-1.5 px-3 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 font-medium text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download Desktop App</span>
+                </button>
+              )}
             </div>
 
             <div className="w-full text-center">
