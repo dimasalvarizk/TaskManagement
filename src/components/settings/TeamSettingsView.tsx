@@ -147,24 +147,6 @@ export const TeamSettingsView: React.FC = () => {
             <p className="text-[11px] text-slate-400 dark:text-slate-500">{currentUser?.email}</p>
           </div>
         </div>
-
-        {/* Role Switcher */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[11px] text-slate-400 dark:text-slate-500 mr-1">Switch Role:</span>
-          {(['Admin', 'Member', 'Viewer'] as Role[]).map((r) => (
-            <button
-              key={r}
-              onClick={() => switchUserRole(r)}
-              className={`px-2.5 py-1 rounded-lg text-xs transition-colors cursor-pointer ${
-                currentUser?.role === r
-                  ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-medium'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-              }`}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* SMTP Email Server Configuration */}
