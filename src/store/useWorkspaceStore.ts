@@ -175,7 +175,26 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     openConfirmModal: (options) => set({ confirmModal: { ...options, isOpen: true } }),
     closeConfirmModal: () => set({ confirmModal: null }),
   
-  smtpConfig: {
+  smtpConfig: typeof window !== 'undefined' ? (() => {
+    try {
+      const saved = localStorage.getItem('taskflow_smtp');
+      return saved ? JSON.parse(saved) : {
+        host: 'smtp.titan.email',
+        port: '587',
+        user: '',
+        pass: '',
+        from: '',
+      };
+    } catch {
+      return {
+        host: 'smtp.titan.email',
+        port: '587',
+        user: '',
+        pass: '',
+        from: '',
+      };
+    }
+  })() : {
     host: 'smtp.titan.email',
     port: '587',
     user: '',
@@ -184,7 +203,15 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   },
   
   setSmtpConfig: (updates) =>
-    set((state) => ({ smtpConfig: { ...state.smtpConfig, ...updates } })),
+    set((state) => {
+      const newConfig = { ...state.smtpConfig, ...updates };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('taskflow_smtp', JSON.stringify(newConfig));
+        } catch (_) {}
+      }
+      return { smtpConfig: newConfig };
+    }),
   
   isSoundEnabled: true,
   isNotificationDrawerOpen: false,
