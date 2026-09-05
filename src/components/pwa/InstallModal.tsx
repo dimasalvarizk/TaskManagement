@@ -129,21 +129,24 @@ export const InstallModal: React.FC = () => {
           </div>
         </div>
 
-        {/* 1-Click Install Button if Prompt Ready */}
-        {effectivePrompt && !isAppInstalled && (
-          <div className="p-4 mx-5 my-3 bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/80 rounded-xl flex items-center justify-between gap-3">
+        {/* Prominent Direct Install Button */}
+        {!isAppInstalled && (
+          <div className="p-4 mx-5 my-3 bg-indigo-50/90 dark:bg-indigo-950/50 border border-indigo-200 dark:border-indigo-800/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
             <div>
-              <div className="font-semibold text-xs text-indigo-950 dark:text-indigo-200">
-                Browser Supports 1-Click Installation
+              <div className="font-semibold text-xs text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                <span>Install TaskFlow to Desktop / Mobile</span>
               </div>
-              <div className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80">
-                Click the button below to install TaskFlow directly to your system.
+              <div className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80 mt-0.5">
+                {effectivePrompt
+                  ? 'Click Install Now to launch the 1-click system installer.'
+                  : 'Click below or use your browser address bar to install.'}
               </div>
             </div>
             <button
               onClick={handleDirectInstall}
               disabled={isPrompting}
-              className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center gap-1.5 transition-all shadow-md hover:scale-[1.02] active:scale-95 shrink-0 cursor-pointer disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
               <span>{isPrompting ? 'Installing...' : 'Install Now'}</span>
