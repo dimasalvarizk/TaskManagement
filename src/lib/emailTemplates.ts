@@ -91,16 +91,16 @@ export function getResetPasswordEmailTemplate(name: string, email: string, reset
 <body>
   <div class="card">
     <div class="logo">🔑</div>
-    <h2>Reset Password Akun Anda</h2>
-    <p>Halo <strong>${name}</strong>,</p>
-    <p>Kami menerima permintaan untuk mereset password akun <strong>ODST Task Management</strong> Anda.</p>
-    <p>Silakan klik tombol di bawah ini untuk membuat password baru:</p>
-    <a href="${resetUrl}" class="btn">Reset Password Saya &rarr;</a>
+    <h2>Reset Your Account Password</h2>
+    <p>Hello <strong>${name}</strong>,</p>
+    <p>We received a request to reset your password for your <strong>ODST Task Management</strong> account.</p>
+    <p>Click the button below to set a new password:</p>
+    <a href="${resetUrl}" class="btn">Reset My Password &rarr;</a>
     <div class="notice">
-      ⏰ Tautan reset password ini hanya berlaku selama <strong>1 jam</strong>. Jika Anda tidak merasa meminta reset password, abaikan email ini dan akun Anda tetap aman.
+      ⏰ This password reset link is valid for <strong>1 hour</strong>. If you did not request a password reset, you can safely ignore this email.
     </div>
     <div class="footer">
-      Dikirim ke ${email} • ODST Task Management • ODST Group Indonesia
+      Sent to ${email} • ODST Task Management • ODST Group Indonesia
     </div>
   </div>
 </body>

@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { valid: false, error: 'Token reset password tidak ditemukan.' },
+        { valid: false, error: 'Password reset token not found in link.' },
         { status: 400 }
       );
     }
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { valid: false, error: 'Tautan reset password tidak valid atau telah kadaluarsa.' },
+        { valid: false, error: 'This password reset link is invalid or has expired.' },
         { status: 400 }
       );
     }
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error('Validate reset token error:', error);
     return NextResponse.json(
-      { valid: false, error: 'Gagal memvalidasi token reset password.' },
+      { valid: false, error: 'Failed to validate password reset token.' },
       { status: 500 }
     );
   }
@@ -62,14 +62,14 @@ export async function POST(req: NextRequest) {
 
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Token reset password tidak valid.' },
+        { success: false, error: 'Password reset token is missing.' },
         { status: 400 }
       );
     }
 
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 6) {
       return NextResponse.json(
-        { success: false, error: 'Password baru minimal harus 6 karakter.' },
+        { success: false, error: 'New password must be at least 6 characters long.' },
         { status: 400 }
       );
     }
@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Tautan reset password sudah kadaluarsa atau tidak valid. Silakan ajukan reset password baru di halaman login.',
+          error: 'This password reset link is expired or invalid. Please request a new link on the login page.',
         },
         { status: 400 }
       );
@@ -112,19 +112,19 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         action: 'reset password',
-        target: 'Akun Pengguna',
+        target: 'User Account',
         workspaceId: user.workspaceId,
       },
     }).catch(() => {});
 
     return NextResponse.json({
       success: true,
-      message: 'Password Anda berhasil diperbarui! Silakan masuk menggunakan password baru Anda.',
+      message: 'Your password has been successfully updated! You can now sign in with your new password.',
     });
   } catch (error: any) {
     console.error('Reset password error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Terjadi kesalahan pada server saat memperbarui password.' },
+      { success: false, error: error.message || 'An error occurred while updating the password.' },
       { status: 500 }
     );
   }

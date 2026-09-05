@@ -75,12 +75,12 @@ export default function LoginPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setForgotSubmitted(true);
-        setForgotMessage(data.message || 'Tautan reset password telah dikirim ke email Anda.');
+        setForgotMessage(data.message || 'Password reset link has been sent to your email.');
       } else {
-        setForgotError(data.error || 'Gagal mengirim tautan reset password. Pastikan email terdaftar.');
+        setForgotError(data.error || 'Failed to send reset link. Please make sure the email is registered.');
       }
     } catch {
-      setForgotError('Terjadi kesalahan jaringan saat mengirim tautan reset password.');
+      setForgotError('Network error occurred while requesting password reset.');
     } finally {
       setForgotLoading(false);
     }
@@ -342,13 +342,13 @@ export default function LoginPage() {
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
-                    Link Terkirim!
+                    Link Sent!
                   </h4>
                   <p className="text-xs text-slate-600 dark:text-slate-300">
-                    Tautan reset password telah dikirim ke <strong>{forgotEmail}</strong>.
+                    Password reset link has been sent to <strong>{forgotEmail}</strong>.
                   </p>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 pt-1">
-                    Silakan periksa folder <strong>Inbox</strong> atau folder <strong>Spam</strong> email Anda.
+                    Please check your <strong>Inbox</strong> or <strong>Spam</strong> folder.
                   </p>
                 </div>
                 <div className="pt-2">
@@ -357,7 +357,7 @@ export default function LoginPage() {
                     onClick={closeForgotModal}
                     className="w-full py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow transition-colors cursor-pointer"
                   >
-                    Tutup
+                    Close
                   </button>
                 </div>
               </div>
@@ -368,7 +368,7 @@ export default function LoginPage() {
                 className="space-y-3 text-xs"
               >
                 <p className="text-slate-500 dark:text-slate-400">
-                  Masukkan alamat email Anda untuk menerima tautan reset password.
+                  Enter your email address to receive password reset instructions.
                 </p>
 
                 {forgotError && (
@@ -397,7 +397,7 @@ export default function LoginPage() {
                     onClick={closeForgotModal}
                     className="px-3 py-1.5 rounded-xl text-slate-600 dark:text-slate-400 text-xs hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
                   >
-                    Batal
+                    Cancel
                   </button>
                   <button
                     suppressHydrationWarning
@@ -408,10 +408,10 @@ export default function LoginPage() {
                     {forgotLoading ? (
                       <>
                         <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>Mengirim...</span>
+                        <span>Sending...</span>
                       </>
                     ) : (
-                      <span>Kirim Link Reset</span>
+                      <span>Send Reset Link</span>
                     )}
                   </button>
                 </div>

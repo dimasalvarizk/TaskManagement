@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     if (!email || typeof email !== 'string') {
       return NextResponse.json(
-        { success: false, error: 'Email wajib diisi.' },
+        { success: false, error: 'Email is required.' },
         { status: 400 }
       );
     }
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: 'Akun dengan email tersebut tidak ditemukan.' },
+        { success: false, error: 'No account found with that email address.' },
         { status: 404 }
       );
     }
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const resetUrl = `${baseUrl}/reset-password?token=${token}`;
     const html = getResetPasswordEmailTemplate(user.name || 'User', user.email, resetUrl);
-    const subject = 'Reset Password Akun ODST Task Management';
+    const subject = 'Reset Your ODST Task Management Account Password';
 
     // Resolve SMTP settings
     const hostSmtp = smtpConfig?.host || process.env.SMTP_HOST || 'smtp.titan.email';
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: `Gagal mengirim email reset password via SMTP: ${mailError?.message || 'Koneksi mail server error'}. Pastikan konfigurasi SMTP aktif.`,
+            error: `Failed to send password reset email via SMTP: ${mailError?.message || 'Mail server error'}. Please verify your SMTP settings.`,
           },
           { status: 500 }
         );
@@ -116,12 +116,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       emailSent,
-      message: 'Tautan reset password telah berhasil dikirim ke email Anda. Silakan periksa folder Inbox atau Spam.',
+      message: 'Password reset link has been successfully sent to your email. Please check your Inbox or Spam folder.',
     });
   } catch (error: any) {
     console.error('Forgot password error:', error);
     return NextResponse.json(
-      { success: false, error: error.message || 'Terjadi kesalahan pada server saat memproses permintaan reset password.' },
+      { success: false, error: error.message || 'An error occurred while processing the password reset request.' },
       { status: 500 }
     );
   }

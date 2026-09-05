@@ -37,7 +37,7 @@ function ResetPasswordContent() {
     if (!token) {
       setIsVerifying(false);
       setTokenValid(false);
-      setError('Token reset password tidak ditemukan pada tautan.');
+      setError('Password reset token is missing from the link.');
       return;
     }
 
@@ -50,11 +50,11 @@ function ResetPasswordContent() {
           setTargetUser(data.user);
         } else {
           setTokenValid(false);
-          setError(data.error || 'Tautan reset password sudah kadaluarsa atau tidak valid.');
+          setError(data.error || 'This password reset link is invalid or has expired.');
         }
       } catch {
         setTokenValid(false);
-        setError('Gagal memverifikasi token reset password. Periksa koneksi internet Anda.');
+        setError('Failed to verify password reset token. Please check your internet connection.');
       } finally {
         setIsVerifying(false);
       }
@@ -68,12 +68,12 @@ function ResetPasswordContent() {
     setError('');
 
     if (newPassword.length < 6) {
-      setError('Password baru minimal harus 6 karakter.');
+      setError('New password must be at least 6 characters long.');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError('Konfirmasi password tidak cocok dengan password baru.');
+      setError('Password confirmation does not match the new password.');
       return;
     }
 
@@ -94,10 +94,10 @@ function ResetPasswordContent() {
       if (res.ok && data.success) {
         setSuccess(true);
       } else {
-        setError(data.error || 'Gagal mereset password. Silakan coba lagi.');
+        setError(data.error || 'Failed to reset password. Please try again.');
       }
     } catch {
-      setError('Terjadi kesalahan jaringan saat memperbarui password.');
+      setError('Network error occurred while resetting password.');
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +185,7 @@ function ResetPasswordContent() {
             <div className="py-8 flex flex-col items-center justify-center space-y-3 text-center">
               <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Memverifikasi token reset password...
+                Verifying password reset token...
               </p>
             </div>
           ) : success ? (
@@ -196,10 +196,10 @@ function ResetPasswordContent() {
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Password Berhasil Diperbarui!
+                  Password Updated Successfully!
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Akun Anda sekarang telah menggunakan password baru. Silakan masuk untuk mengakses workspace Anda.
+                  Your account password has been updated. You can now sign in to access your workspace.
                 </p>
               </div>
 
@@ -207,7 +207,7 @@ function ResetPasswordContent() {
                 href="/login"
                 className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] cursor-pointer"
               >
-                <span>Masuk Sekarang (Sign In) &rarr;</span>
+                <span>Sign In Now &rarr;</span>
               </Link>
             </div>
           ) : !tokenValid ? (
@@ -218,10 +218,10 @@ function ResetPasswordContent() {
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  Tautan Tidak Valid
+                  Invalid or Expired Link
                 </h3>
                 <p className="text-xs text-red-500 dark:text-red-400 leading-relaxed">
-                  {error || 'Tautan reset password sudah kadaluarsa atau tidak ditemukan.'}
+                  {error || 'This password reset link is invalid or has expired.'}
                 </p>
               </div>
 
@@ -230,7 +230,7 @@ function ResetPasswordContent() {
                   href="/login"
                   className="w-full inline-flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] cursor-pointer"
                 >
-                  <span>Minta Tautan Reset Baru di Login &rarr;</span>
+                  <span>Request New Reset Link on Login &rarr;</span>
                 </Link>
               </div>
             </div>
@@ -246,7 +246,7 @@ function ResetPasswordContent() {
 
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Password Baru
+                  New Password
                 </label>
                 <div className="relative">
                   <input
@@ -255,7 +255,7 @@ function ResetPasswordContent() {
                     minLength={6}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimal 6 karakter"
+                    placeholder="Minimum 6 characters"
                     className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                   />
                   <button
@@ -270,7 +270,7 @@ function ResetPasswordContent() {
 
               <div>
                 <label className="block text-slate-700 dark:text-slate-300 font-medium mb-1.5">
-                  Konfirmasi Password Baru
+                  Confirm New Password
                 </label>
                 <div className="relative">
                   <input
@@ -279,7 +279,7 @@ function ResetPasswordContent() {
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Ketik ulang password baru"
+                    placeholder="Re-enter new password"
                     className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100/80 focus:bg-white dark:bg-[#1d202b] dark:hover:bg-[#222633] dark:focus:bg-[#181a24] text-slate-900 dark:text-white text-xs placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all border-none"
                   />
                   <button
@@ -299,7 +299,7 @@ function ResetPasswordContent() {
                   className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition-all duration-150 active:scale-[0.98] disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Lock className="w-3.5 h-3.5" />
-                  <span>{isLoading ? 'Menyimpan Password...' : 'Simpan Password Baru'}</span>
+                  <span>{isLoading ? 'Saving Password...' : 'Save New Password'}</span>
                 </button>
               </div>
 
@@ -308,7 +308,7 @@ function ResetPasswordContent() {
                   href="/login"
                   className="text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-xs transition-colors"
                 >
-                  Batal dan kembali ke Login
+                  Cancel and return to Login
                 </Link>
               </div>
             </form>
