@@ -33,10 +33,25 @@ export async function PATCH(
     if (role !== undefined) userUpdate.role = role;
     if (status !== undefined) userUpdate.status = status;
 
-    const updated = await prisma.user.update({
-      where: { id },
+    let targetUserId = id;
+    const memberObj = await prisma.workspaceMember.findFirst({
+      where: { OR: [{ id }, { userId: id }] },
+    });
+    if (memberObj) {
+      targetUserId = memberObj.userId;
+    }
+
+    let updated = await prisma.user.update({
+      where: { id: targetUserId },
       data: userUpdate,
     }).catch(() => null);
+
+    if (!updated && id.includes('@')) {
+      updated = await prisma.user.update({
+        where: { email: id.toLowerCase().trim() },
+        data: userUpdate,
+      }).catch(() => null);
+    }
 
     return NextResponse.json({
       success: true,

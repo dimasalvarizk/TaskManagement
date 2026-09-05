@@ -754,7 +754,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     set((state) => {
       const updatedUsers = state.users.map((u) => (u.id === userId ? { ...u, avatar: avatarUrl } : u));
       let updatedCurrent = state.currentUser;
-      if (state.currentUser?.id === userId) {
+      if (state.currentUser && (state.currentUser.id === userId || state.currentUser.email.toLowerCase() === get().users.find(u => u.id === userId)?.email.toLowerCase())) {
         updatedCurrent = { ...state.currentUser, avatar: avatarUrl };
         if (typeof window !== 'undefined') {
           localStorage.setItem('taskflow_user', JSON.stringify(updatedCurrent));
@@ -775,6 +775,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar: avatarUrl }),
       });
+      await get().fetchWorkspaceData();
     } catch (err) {
       console.warn('Sync avatar error:', err);
     }

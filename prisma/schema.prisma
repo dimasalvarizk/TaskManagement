@@ -28,7 +28,7 @@ model User {
   name        String
   email       String            @unique
   password    String            @default("$2a$10$1r2bA.3wI6/l2.5aI/E07e4sKj40QeE5vM6/m2oQ8b.V2e5qWl7C2")
-  avatar      String            @db.Text
+  avatar      String            @db.LongText
   role        String            @default("Member") // Admin, Member, Viewer
   status      String            @default("active") // active, invited, offline
   workspaceId String?

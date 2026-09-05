@@ -28,6 +28,32 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     fetchWorkspaceData();
+
+    // 1. Instant sync when tab/app becomes active or visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchWorkspaceData();
+      }
+    };
+    const handleFocus = () => {
+      fetchWorkspaceData();
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    // 2. Real-time background heartbeat polling every 5 seconds
+    const pollInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchWorkspaceData();
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(pollInterval);
+    };
   }, [fetchWorkspaceData]);
 
   useEffect(() => {
