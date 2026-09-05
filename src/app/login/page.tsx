@@ -20,8 +20,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   const [mounted, setMounted] = useState(false);
-  const [email, setEmail] = useState('admin@taskflow.io');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +48,7 @@ export default function LoginPage() {
       router.push('/');
     } else {
       setIsLoading(false);
-      setError(result.error || 'Invalid email or password. You can use admin@taskflow.io');
+      setError(result.error || 'Invalid email or password');
     }
   };
 
