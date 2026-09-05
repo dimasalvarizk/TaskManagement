@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Task, Project, Document, User, TaskStatus, Priority, DocBlock, Activity, Role, NotificationItem, SentEmail } from '@/types';
 import { INITIAL_COLUMNS, INITIAL_DOCS, INITIAL_PROJECTS, INITIAL_TASKS, INITIAL_USERS, INITIAL_ACTIVITIES, INITIAL_NOTIFICATIONS, INITIAL_SENT_EMAILS } from '@/lib/initialData';
 import { playNotificationSound } from '@/lib/audio';
-import { getInvitationEmailTemplate } from '@/lib/emailTemplates';
+import { getInvitationEmailTemplate, getTaskAssignmentEmailTemplate } from '@/lib/emailTemplates';
 
 interface SMTPConfig {
   host: string;
@@ -862,6 +862,40 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       }
     } catch (err) {
       console.warn('Sync addTask error:', err);
+    }
+
+    // Dispatch Email Notification to Assignees (e.g. Dimas assigns task to Ali)
+    if (newTask.assigneeIds && newTask.assigneeIds.length > 0) {
+      const allUsers = get().users;
+      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+      const assigneesToNotify = allUsers.filter(
+        (u) =>
+          newTask.assigneeIds.includes(u.id) &&
+          u.email &&
+          (!current || u.email.toLowerCase() !== current.email.toLowerCase())
+      );
+
+      for (const assignee of assigneesToNotify) {
+        const taskUrl = origin ? `${origin}/?task=${newTask.id}` : undefined;
+        const emailHtml = getTaskAssignmentEmailTemplate(
+          newTask.title,
+          assignee.name || 'Team Member',
+          current?.name || 'A team member',
+          taskUrl
+        );
+
+        fetch('/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: assignee.email,
+            subject: `📋 New Task Assigned: ${newTask.title}`,
+            html: emailHtml,
+            type: 'task_assigned',
+            smtpConfig: get().smtpConfig,
+          }),
+        }).catch((err) => console.warn('Task email dispatch warning:', err));
+      }
     }
   },
   
