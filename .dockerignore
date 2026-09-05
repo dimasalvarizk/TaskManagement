@@ -1,0 +1,46 @@
+# Git & Version Control
+.git
+.gitignore
+
+# Dependencies & Build Output
+node_modules
+.next
+out
+build
+dist
+*.tsbuildinfo
+
+# Sensitive Environment Files
+.env
+.env*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Confidential Documents & Notes
+*.docx
+*.doc
+*.xlsx
+*.pdf
+~$*
+DatabasdanLogin.docx
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & OS Files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Deployment Scripts & Dumps
+deploy-vps.sh
+*.sql
+*.sqlite
+*.dump

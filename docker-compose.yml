@@ -1,0 +1,72 @@
+services:
+  # ============================================================================
+  # 1. MySQL Database Service
+  # ============================================================================
+  mysql:
+    image: mysql:8.0
+    container_name: taskflow_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-taskflow_db}
+      MYSQL_USER: ${MYSQL_USER:-taskflow_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-taskflow_password}
+    ports:
+      # Secure: Bind to localhost (127.0.0.1) on VPS to prevent internet scanning
+      - "${MYSQL_BIND_IP:-127.0.0.1}:${MYSQL_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u ${MYSQL_USER:-taskflow_user} -p${MYSQL_PASSWORD:-taskflow_password} || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ============================================================================
+  # 2. TaskFlow Next.js Application
+  # ============================================================================
+  taskflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: taskflow_app
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL:-mysql://${MYSQL_USER:-taskflow_user}:${MYSQL_PASSWORD:-taskflow_password}@mysql:3306/${MYSQL_DATABASE:-taskflow_db}}
+      - SMTP_HOST=${SMTP_HOST:-}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_SECURE=${SMTP_SECURE:-false}
+      - SMTP_USER=${SMTP_USER:-}
+      - SMTP_PASS=${SMTP_PASS:-}
+      - SMTP_FROM=${SMTP_FROM:-}
+
+  # ============================================================================
+  # 3. Optional Database Management GUI (phpMyAdmin)
+  # ============================================================================
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: taskflow_phpmyadmin
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: ${MYSQL_USER:-taskflow_user}
+      PMA_PASSWORD: ${MYSQL_PASSWORD:-taskflow_password}
+    ports:
+      - "${PMA_PORT:-8085}:80"
+
+volumes:
+  mysql_data:
+    driver: local
