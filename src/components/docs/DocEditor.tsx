@@ -398,25 +398,23 @@ export const DocEditor: React.FC = () => {
                     >
                       <Pencil className="w-3 h-3" />
                     </button>
-                    {docs.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openConfirmModal({
-                            title: 'Delete Document',
-                            message: `Are you sure you want to delete note "${doc.title}"?`,
-                            confirmLabel: 'Delete Document',
-                            variant: 'danger',
-                            onConfirm: () => deleteDoc(doc.id),
-                          });
-                        }}
-                        className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0 cursor-pointer"
-                        title={`Delete ${doc.title}`}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openConfirmModal({
+                          title: 'Delete Document',
+                          message: `Are you sure you want to delete note "${doc.title}"?`,
+                          confirmLabel: 'Delete Document',
+                          variant: 'danger',
+                          onConfirm: () => deleteDoc(doc.id),
+                        });
+                      }}
+                      className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-all shrink-0 cursor-pointer"
+                      title={`Delete ${doc.title}`}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
                   </div>
                 )}
               </div>
@@ -484,7 +482,7 @@ export const DocEditor: React.FC = () => {
               <span className="text-[10px] bg-slate-100 dark:bg-neutral-800 px-2 py-0.5 rounded text-slate-500">
                 Tip: Type &quot;/&quot; or click toolbar buttons below
               </span>
-              {!isViewer && docs.length > 1 && (
+              {!isViewer && (
                 <button
                   type="button"
                   onClick={() => {
