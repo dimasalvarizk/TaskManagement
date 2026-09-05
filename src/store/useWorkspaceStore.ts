@@ -606,7 +606,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     
     const newNotif: NotificationItem = {
       id: 'notif-' + Date.now(),
-      userId: current?.id || 'u1',
+      userId: current?.id || 'all',
       title,
       message,
       type,
@@ -618,6 +618,20 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     set((state) => ({
       notifications: [newNotif, ...state.notifications],
     }));
+
+    // Async sync notification to MySQL database
+    fetch('/api/notifications', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: current?.id || 'all',
+        title,
+        message,
+        type,
+        linkTaskId,
+        workspaceId: current?.workspaceId,
+      }),
+    }).catch(() => {});
   },
   
   markNotificationAsRead: (id) => {
@@ -903,6 +917,21 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       );
 
       for (const assignee of assigneesToNotify) {
+        // 1. Dispatch In-App Notification into MySQL Database
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: assignee.id,
+            title: 'New Task Assigned',
+            message: `${current?.name || 'A team member'} assigned you "${newTask.title}"`,
+            type: 'task',
+            linkTaskId: newTask.id,
+            workspaceId: current?.workspaceId,
+          }),
+        }).catch(() => {});
+
+        // 2. Dispatch Email via SMTP
         const taskUrl = origin ? `${origin}/?task=${newTask.id}` : undefined;
         const emailHtml = getTaskAssignmentEmailTemplate(
           newTask.title,
@@ -1015,6 +1044,27 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     }).catch(() => {});
 
     get().triggerNotification('New Task Comment', `${current.name}: "${text}"`, 'comment', taskId);
+
+    // Notify task assignees in DB
+    const currentTask = get().tasks.find((t) => t.id === taskId);
+    if (currentTask && currentTask.assigneeIds) {
+      for (const assigneeId of currentTask.assigneeIds) {
+        if (assigneeId !== current.id) {
+          fetch('/api/notifications', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId: assigneeId,
+              title: 'New Task Comment',
+              message: `${current.name}: "${text}"`,
+              type: 'comment',
+              linkTaskId: taskId,
+              workspaceId: current.workspaceId,
+            }),
+          }).catch(() => {});
+        }
+      }
+    }
   },
   
   updateDocBlocks: (docId, blocks) => {

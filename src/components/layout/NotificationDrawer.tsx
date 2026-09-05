@@ -16,6 +16,7 @@ import {
 
 export const NotificationDrawer: React.FC = () => {
   const {
+    currentUser,
     notifications,
     isNotificationDrawerOpen,
     setNotificationDrawerOpen,
@@ -33,11 +34,21 @@ export const NotificationDrawer: React.FC = () => {
 
   if (!isNotificationDrawerOpen) return null;
 
-  const filteredNotifs = notifications.filter((n) =>
+  const userNotifs = notifications.filter((n) => {
+    return (
+      !n.userId ||
+      n.userId === 'all' ||
+      !currentUser ||
+      n.userId === currentUser.id ||
+      (n.userId && currentUser.email && n.userId.toLowerCase() === currentUser.email.toLowerCase())
+    );
+  });
+
+  const filteredNotifs = userNotifs.filter((n) =>
     filter === 'all' ? true : n.type === filter
   );
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = userNotifs.filter((n) => !n.read).length;
 
   const handleNotifClick = (notifId: string, linkTaskId?: string) => {
     markNotificationAsRead(notifId);

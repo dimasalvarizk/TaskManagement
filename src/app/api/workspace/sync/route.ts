@@ -90,9 +90,14 @@ export async function GET(req: Request) {
           take: 30,
         }),
         prisma.notification.findMany({
-          where: { workspaceId },
+          where: {
+            OR: [
+              { workspaceId },
+              { workspaceId: null },
+            ],
+          },
           orderBy: { createdAt: 'desc' },
-          take: 40,
+          take: 50,
         }),
         prisma.sentEmail.findMany({
           where: { workspaceId },
