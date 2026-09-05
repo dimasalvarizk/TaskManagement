@@ -50,6 +50,16 @@ self.addEventListener('fetch', (event) => {
   // Ignore non-HTTP/HTTPS requests (e.g. chrome-extension)
   if (!request.url.startsWith('http')) return;
 
+  // Bypass dev mode HMR, Webpack hot updates, SSE & WebSocket
+  if (
+    url.pathname.includes('webpack') ||
+    url.pathname.includes('hot-update') ||
+    url.pathname.includes('_next/webpack') ||
+    request.headers.get('accept')?.includes('text/event-stream')
+  ) {
+    return;
+  }
+
   // 1. API Calls: Network First -> Cache Fallback
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(

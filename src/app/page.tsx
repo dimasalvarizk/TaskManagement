@@ -17,49 +17,32 @@ import { NewTaskModal } from '@/components/tasks/NewTaskModal';
 import { NewProjectModal } from '@/components/projects/NewProjectModal';
 import { NotificationDrawer } from '@/components/layout/NotificationDrawer';
 import { EmailPreviewModal } from '@/components/email/EmailPreviewModal';
-import { SplashScreen } from '@/components/layout/SplashScreen';
 import { ConfirmModal } from '@/components/common/ConfirmModal';
 
 export default function Home() {
   const { currentUser, activeView, fetchWorkspaceData } = useWorkspaceStore();
   const router = useRouter();
-  const [isInitializing, setIsInitializing] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     fetchWorkspaceData();
   }, [fetchWorkspaceData]);
 
   useEffect(() => {
-    // If not logged in after mount check, redirect to login
-    if (!isInitializing && !currentUser) {
+    if (mounted && !currentUser) {
       router.replace('/login');
     }
-  }, [isInitializing, currentUser, router]);
+  }, [mounted, currentUser, router]);
 
-  const handleSplashFinish = () => {
-    setIsInitializing(false);
-    if (!useWorkspaceStore.getState().currentUser) {
-      router.replace('/login');
-    }
-  };
-
-  if (isInitializing) {
+  if (!mounted || !currentUser) {
     return (
-      <SplashScreen
-        message="Loading Workspace..."
-        duration={1800}
-        onFinish={handleSplashFinish}
-      />
-    );
-  }
-
-  if (!currentUser) {
-    return (
-      <SplashScreen
-        message="Redirecting to Login..."
-        duration={800}
-        onFinish={() => router.replace('/login')}
-      />
+      <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-[#0d0d0e] text-slate-400">
+        <div className="flex items-center gap-2 text-xs font-mono">
+          <div className="w-3.5 h-3.5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <span>TaskFlow Workspace...</span>
+        </div>
+      </div>
     );
   }
 
