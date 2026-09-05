@@ -631,24 +631,49 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       return { success: false, realEmailSent: false, message: 'Only Admins can invite team members.' };
     }
     
-    const newUser: User = {
+    const cleanEmail = email.toLowerCase().trim();
+    let dbUser: User = {
       id: 'u-' + Date.now(),
       name,
-      email,
+      email: cleanEmail,
       avatar: `https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80`,
       role,
       status: 'invited',
       workspaceId: current.workspaceId,
       workspaceName: current.workspaceName,
     };
+
+    // 1. First save to MySQL via API to get real DB IDs
+    try {
+      const userRes = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: cleanEmail, role, workspaceId: current.workspaceId }),
+      });
+      const userData = await userRes.json();
+      if (userData.success && userData.user) {
+        dbUser = {
+          id: userData.user.id || userData.user.userId || dbUser.id,
+          name: userData.user.name || name,
+          email: userData.user.email || cleanEmail,
+          avatar: userData.user.avatar || dbUser.avatar,
+          role: userData.user.role || role,
+          status: userData.user.status || 'invited',
+          workspaceId: userData.user.workspaceId || current.workspaceId,
+          workspaceName: current.workspaceName,
+        };
+      }
+    } catch (err) {
+      console.warn('User create sync warning:', err);
+    }
     
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const inviteUrl = `${origin}/register?invite=${newUser.id}`;
-    const emailHtml = getInvitationEmailTemplate(name, email, role, inviteUrl);
+    const inviteUrl = `${origin}/register?invite=${dbUser.id}`;
+    const emailHtml = getInvitationEmailTemplate(name, cleanEmail, role, inviteUrl);
     
     const sentEmailItem: SentEmail = {
       id: 'em-' + Date.now(),
-      to: email,
+      to: cleanEmail,
       subject: `⚡ Invitation to join ${current.workspaceName || 'TaskFlow Workspace'} (${role})`,
       html: emailHtml,
       sentAt: 'Just now',
@@ -656,21 +681,14 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     };
     
     let realEmailSent = false;
-    let resultMessage = `Invitation sent to ${email}`;
-    
-    // Save to MySQL via API
-    fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, role, workspaceId: current.workspaceId }),
-    }).catch((err) => console.warn('User create sync warning:', err));
+    let resultMessage = `Invitation sent to ${cleanEmail}`;
 
     try {
       const res = await fetch('/api/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: email,
+          to: cleanEmail,
           subject: sentEmailItem.subject,
           html: emailHtml,
           type: 'invitation',
@@ -681,7 +699,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       const data = await res.json();
       if (res.ok && data.realEmailSent) {
         realEmailSent = true;
-        resultMessage = `Real email delivered to ${email} via SMTP!`;
+        resultMessage = `Real email delivered to ${cleanEmail} via SMTP!`;
       } else if (data.note) {
         resultMessage = data.note;
       }
@@ -691,19 +709,19 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     
     get().triggerNotification(
       realEmailSent ? 'Real Invitation Email Sent' : 'Team Member Invited',
-      realEmailSent ? `Delivered real email to ${email}` : `Invited ${email} (${role})`,
+      realEmailSent ? `Delivered real email to ${cleanEmail}` : `Invited ${cleanEmail} (${role})`,
       'invite'
     );
     
     set((state) => ({
-      users: [...state.users, newUser],
+      users: [...state.users.filter((u) => u.email !== cleanEmail), dbUser],
       sentEmails: [sentEmailItem, ...state.sentEmails],
       activities: [
         {
           id: 'act-' + Date.now(),
           userId: current.id,
           action: realEmailSent ? 'sent real invitation email to' : 'invited team member',
-          target: `${name} (${email})`,
+          target: `${name} (${cleanEmail})`,
           timestamp: 'Just now',
         },
         ...state.activities,

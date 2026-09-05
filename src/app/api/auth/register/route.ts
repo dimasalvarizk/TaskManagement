@@ -13,9 +13,16 @@ export async function GET(req: Request) {
 
     // Invite verification mode
     if (inviteId) {
-      // 1. Check workspaceMember
+      // 1. Check workspaceMember by ID, userId, or user's email
       const memberInvite = await prisma.workspaceMember.findFirst({
-        where: { id: inviteId, status: 'invited' },
+        where: {
+          OR: [
+            { id: inviteId },
+            { userId: inviteId },
+            { user: { email: inviteId.toLowerCase() } },
+          ],
+          status: 'invited',
+        },
         include: { workspace: true, user: true },
       });
 
@@ -37,7 +44,13 @@ export async function GET(req: Request) {
 
       // 2. Legacy fallback check user table
       const userInvite = await prisma.user.findFirst({
-        where: { id: inviteId, status: 'invited' },
+        where: {
+          OR: [
+            { id: inviteId },
+            { email: inviteId.toLowerCase() },
+          ],
+          status: 'invited',
+        },
         include: { workspace: true },
       });
 
@@ -97,22 +110,19 @@ export async function POST(req: Request) {
     // 1. INVITE ACCEPTANCE FLOW
     // ----------------------------------------------------
     if (cleanInviteId) {
-      // Find membership invite
+      // Find membership invite by membership ID, user ID, or email
       let memberInvite = await prisma.workspaceMember.findFirst({
-        where: { id: cleanInviteId, status: 'invited' },
+        where: {
+          OR: [
+            { id: cleanInviteId },
+            { userId: cleanInviteId },
+            { user: { email: cleanEmail } },
+            { user: { email: cleanInviteId.toLowerCase() } },
+          ],
+          status: 'invited',
+        },
         include: { workspace: true, user: true },
       });
-
-      // Fallback by email and status
-      if (!memberInvite) {
-        memberInvite = await prisma.workspaceMember.findFirst({
-          where: {
-            user: { email: cleanEmail },
-            status: 'invited',
-          },
-          include: { workspace: true, user: true },
-        });
-      }
 
       if (memberInvite) {
         const hashedPassword = await bcrypt.hash(String(password), 10);
