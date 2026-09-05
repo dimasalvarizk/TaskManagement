@@ -43,6 +43,12 @@ export const TeamSettingsView: React.FC = () => {
   const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error' | 'info'; msg: string } | null>(null);
   const [isSendingTest, setIsSendingTest] = useState(false);
 
+  React.useEffect(() => {
+    if (currentUser?.email) {
+      setTestRecipientEmail(currentUser.email);
+    }
+  }, [currentUser?.email]);
+
   const isAdmin = currentUser?.role === 'Admin';
 
   const handleInviteSubmit = async (e: React.FormEvent) => {

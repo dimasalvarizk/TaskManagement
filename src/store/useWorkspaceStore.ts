@@ -174,7 +174,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
     port: '587',
     user: '',
     pass: '',
-    from: 'TaskFlow Workspace <noreply@taskflow.io>',
+    from: 'ODST Workspace <noreply@odst.com>',
   },
   
   setSmtpConfig: (updates) =>
