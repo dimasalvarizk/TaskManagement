@@ -110,7 +110,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
                 TASKFLOW
               </h1>
               <p className="text-[11px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
-                ODST &bull; Manazil Al Mukhtara Group
+                ODST Group Indonesia
               </p>
             </motion.div>
           </div>

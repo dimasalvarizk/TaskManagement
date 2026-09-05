@@ -82,7 +82,7 @@ export default function RegisterPage() {
                   DST TaskFlow
                 </h2>
                 <p className="text-xs text-slate-500 dark:text-slate-400 max-w-[200px] leading-relaxed">
-                  Enterprise Task & Document Workspace for Manazil Al Mukhtara Group
+                  Enterprise Task & Document Workspace for ODST Group Indonesia
                 </p>
               </div>
             </div>

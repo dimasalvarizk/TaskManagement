@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'TaskFlow Workspace — Manazil Al Mukhtara Group',
+    name: 'TaskFlow Workspace — ODST Group Indonesia',
     short_name: 'TaskFlow',
     description: 'Modern team task management, Kanban board, and Notion-style documentation platform.',
     start_url: '/',
