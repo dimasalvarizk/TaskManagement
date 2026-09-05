@@ -4,20 +4,16 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting TaskFlow database seeding...');
+  console.log('🌱 Checking TaskFlow database for initial seed...');
 
-  // 1. Clean existing records if any
-  await prisma.comment.deleteMany({});
-  await prisma.subTask.deleteMany({});
-  await prisma.task.deleteMany({});
-  await prisma.document.deleteMany({});
-  await prisma.project.deleteMany({});
-  await prisma.notification.deleteMany({});
-  await prisma.activity.deleteMany({});
-  await prisma.sentEmail.deleteMany({});
-  await prisma.user.deleteMany({});
+  // Only seed if database is completely empty
+  const userCount = await prisma.user.count();
+  if (userCount > 0) {
+    console.log('ℹ️ Database already contains data. Skipping initial seeding.');
+    return;
+  }
 
-  console.log('🧹 Cleaned existing tables.');
+  console.log('🌱 Seeding fresh database...');
 
   // Default hashed password: "password123"
   const defaultHashedPassword = await bcrypt.hash('password123', 10);
