@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         email: cleanEmail,
         password: hashedPassword,
         avatar: defaultAvatar,
-        role: 'Member',
+        role: 'Admin',
         status: 'active',
       },
     });
