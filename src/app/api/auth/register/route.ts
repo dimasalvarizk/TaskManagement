@@ -26,16 +26,16 @@ export async function GET(req: Request) {
           inviteValid: true,
           invite: {
             id: memberInvite.id,
-            name: memberInvite.user.name,
-            email: memberInvite.user.email,
+            name: memberInvite.user?.name || '',
+            email: memberInvite.user?.email || '',
             role: memberInvite.role,
             workspaceId: memberInvite.workspaceId,
-            workspaceName: memberInvite.workspace.name,
+            workspaceName: memberInvite.workspace?.name || 'TaskFlow Workspace',
           },
         });
       }
 
-      // 2. Legacy fallback check user
+      // 2. Legacy fallback check user table
       const userInvite = await prisma.user.findFirst({
         where: { id: inviteId, status: 'invited' },
         include: { workspace: true },
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
             name: userInvite.name,
             email: userInvite.email,
             role: userInvite.role,
-            workspaceId: userInvite.workspaceId,
+            workspaceId: userInvite.workspaceId || '',
             workspaceName: userInvite.workspace?.name || 'TaskFlow Workspace',
           },
         });
@@ -72,7 +72,7 @@ export async function GET(req: Request) {
     });
   } catch (err: any) {
     console.error('Register GET error:', err);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: err.message || 'Failed to check registration status' }, { status: 500 });
   }
 }
 
@@ -93,7 +93,9 @@ export async function POST(req: Request) {
     const cleanInviteId = inviteId && inviteId !== 'undefined' && inviteId !== 'null' ? String(inviteId).trim() : null;
     const defaultAvatar = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
 
-    // 1. Invite Acceptance Flow
+    // ----------------------------------------------------
+    // 1. INVITE ACCEPTANCE FLOW
+    // ----------------------------------------------------
     if (cleanInviteId) {
       // Find membership invite
       let memberInvite = await prisma.workspaceMember.findFirst({
@@ -119,7 +121,7 @@ export async function POST(req: Request) {
         const updatedUser = await prisma.user.update({
           where: { id: memberInvite.userId },
           data: {
-            name: name ? String(name).trim() : memberInvite.user.name,
+            name: name ? String(name).trim() : memberInvite.user?.name,
             password: hashedPassword,
             status: 'active',
           },
@@ -136,7 +138,7 @@ export async function POST(req: Request) {
           data: {
             userId: updatedUser.id,
             action: 'joined workspace',
-            target: memberInvite.workspace.name,
+            target: memberInvite.workspace?.name || 'Workspace',
             workspaceId: memberInvite.workspaceId,
           },
         }).catch(() => {});
@@ -150,7 +152,7 @@ export async function POST(req: Request) {
         const formattedMemberships = allMemberships.map((m) => ({
           id: m.id,
           workspaceId: m.workspaceId,
-          workspaceName: m.workspace.name,
+          workspaceName: m.workspace?.name || 'Workspace',
           role: m.role,
           status: m.status,
         }));
@@ -165,7 +167,7 @@ export async function POST(req: Request) {
             role: memberInvite.role,
             status: 'active',
             workspaceId: memberInvite.workspaceId,
-            workspaceName: memberInvite.workspace.name,
+            workspaceName: memberInvite.workspace?.name || 'Workspace',
             memberships: formattedMemberships,
           },
         });
@@ -216,7 +218,7 @@ export async function POST(req: Request) {
             avatar: activatedUser.avatar,
             role: activatedUser.role,
             status: 'active',
-            workspaceId: activatedUser.workspaceId,
+            workspaceId: activatedUser.workspaceId || '',
             workspaceName: activatedUser.workspace?.name || 'Workspace',
             memberships: [
               {
@@ -240,7 +242,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // 2. New Workspace Creation Flow (Self-Registration or Additional Workspace)
+    // ----------------------------------------------------
+    // 2. NEW WORKSPACE CREATION FLOW (SELF-REGISTRATION)
+    // ----------------------------------------------------
     const existingUser = await prisma.user.findUnique({
       where: { email: cleanEmail },
       include: {
@@ -299,7 +303,13 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create starter project & task
+    // Update user's active workspaceId
+    await prisma.user.update({
+      where: { id: activeUser!.id },
+      data: { workspaceId: newWorkspace.id },
+    }).catch(() => {});
+
+    // Create starter project & task safely
     try {
       const starterProject = await prisma.project.create({
         data: {
@@ -345,7 +355,7 @@ export async function POST(req: Request) {
     const formattedMemberships = allMemberships.map((m) => ({
       id: m.id,
       workspaceId: m.workspaceId,
-      workspaceName: m.workspace.name,
+      workspaceName: m.workspace?.name || 'Workspace',
       role: m.role,
       status: m.status,
     }));
