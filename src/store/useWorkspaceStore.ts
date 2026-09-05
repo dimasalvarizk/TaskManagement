@@ -74,6 +74,12 @@ interface WorkspaceState {
   setPwaInstallPrompt: (prompt: any) => void;
   promptInstallApp: () => Promise<boolean>;
   
+  // Multi-Workspace Switcher
+  isNewWorkspaceModalOpen: boolean;
+  setNewWorkspaceModalOpen: (open: boolean) => void;
+  switchWorkspace: (workspaceId: string) => Promise<void>;
+  createNewWorkspace: (name: string) => Promise<{ success: boolean; error?: string }>;
+  
   // Data Sync
   fetchWorkspaceData: () => Promise<void>;
   
@@ -222,7 +228,10 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   activeTaskId: null,
   activeDocId: 'doc-1',
   isCommandPaletteOpen: false,
+  isNewWorkspaceModalOpen: false,
+  setNewWorkspaceModalOpen: (open) => set({ isNewWorkspaceModalOpen: open }),
   isNewTaskModalOpen: false,
+  setNewTaskModalOpen: (open) => set({ isNewTaskModalOpen: open }),
   isNewProjectModalOpen: false,
   setNewProjectModalOpen: (open) => set({ isNewProjectModalOpen: open }),
   isInstallModalOpen: false,
@@ -234,6 +243,77 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   promptInstallApp: async () => {
     set({ isInstallModalOpen: true });
     return true;
+  },
+  
+  switchWorkspace: async (workspaceId: string) => {
+    const current = get().currentUser;
+    if (!current) return;
+    const targetMembership = current.memberships?.find((m) => m.workspaceId === workspaceId);
+    if (!targetMembership) return;
+
+    const updatedUser: User = {
+      ...current,
+      workspaceId: targetMembership.workspaceId,
+      workspaceName: targetMembership.workspaceName,
+      role: targetMembership.role,
+      status: targetMembership.status,
+    };
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('taskflow_user', JSON.stringify(updatedUser));
+    }
+
+    set({
+      currentUser: updatedUser,
+      selectedProjectId: null,
+      activeTaskId: null,
+      activeDocId: null,
+    });
+
+    get().triggerNotification('Switched Workspace', `Active workspace is now "${targetMembership.workspaceName}"`, 'system');
+    await get().fetchWorkspaceData();
+  },
+
+  createNewWorkspace: async (name: string) => {
+    const current = get().currentUser;
+    if (!current) return { success: false, error: 'User not logged in' };
+
+    try {
+      const res = await fetch('/api/workspace', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, userId: current.id }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.membership) {
+        const updatedMemberships = [...(current.memberships || []), data.membership];
+        const updatedUser: User = {
+          ...current,
+          workspaceId: data.membership.workspaceId,
+          workspaceName: data.membership.workspaceName,
+          role: 'Admin',
+          status: 'active',
+          memberships: updatedMemberships,
+        };
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('taskflow_user', JSON.stringify(updatedUser));
+        }
+
+        set({
+          currentUser: updatedUser,
+          isNewWorkspaceModalOpen: false,
+          selectedProjectId: null,
+        });
+
+        get().triggerNotification('Workspace Created', `Created and switched to "${name}"`, 'system');
+        await get().fetchWorkspaceData();
+        return { success: true };
+      }
+      return { success: false, error: data.error || 'Failed to create workspace' };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error' };
+    }
   },
   
   createProject: async (name: string, color = '#6366f1', description = '') => {
@@ -487,7 +567,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
   setActiveTaskId: (id) => set({ activeTaskId: id }),
   setActiveDocId: (id) => set({ activeDocId: id }),
   setCommandPaletteOpen: (open) => set({ isCommandPaletteOpen: open }),
-  setNewTaskModalOpen: (open) => set({ isNewTaskModalOpen: open }),
   
   // Notification Dispatcher
   triggerNotification: (title, message, type, linkTaskId) => {

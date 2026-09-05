@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useWorkspaceStore } from '@/store/useWorkspaceStore';
 import { useRouter } from 'next/navigation';
 import {
@@ -15,6 +15,10 @@ import {
   Pencil,
   X,
   Download,
+  ChevronsUpDown,
+  Check,
+  Building2,
+  Sparkles,
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -27,6 +31,8 @@ export const Sidebar: React.FC = () => {
     setActiveView,
     setNewTaskModalOpen,
     setNewProjectModalOpen,
+    setNewWorkspaceModalOpen,
+    switchWorkspace,
     updateProject,
     deleteProject,
     openConfirmModal,
@@ -40,12 +46,29 @@ export const Sidebar: React.FC = () => {
   const [mounted, setMounted] = useState(false);
   const [editingProjectId, setEditingProjectId] = useState<string | null>(null);
   const [editingProjectName, setEditingProjectName] = useState<string>('');
+  const [isWorkspaceMenuOpen, setIsWorkspaceMenuOpen] = useState(false);
+  const workspaceMenuRef = useRef<HTMLDivElement>(null);
 
   const router = useRouter();
 
-  React.useEffect(() => {
+  useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Close workspace switcher popover when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (workspaceMenuRef.current && !workspaceMenuRef.current.contains(e.target as Node)) {
+        setIsWorkspaceMenuOpen(false);
+      }
+    };
+    if (isWorkspaceMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isWorkspaceMenuOpen]);
 
   const handleLogout = () => {
     logout();
@@ -60,6 +83,15 @@ export const Sidebar: React.FC = () => {
   };
 
   const isViewer = currentUser?.role === 'Viewer';
+  const memberships = currentUser?.memberships || [
+    {
+      id: 'default-m',
+      workspaceId: currentUser?.workspaceId || 'default',
+      workspaceName: currentUser?.workspaceName || 'TaskFlow Workspace',
+      role: currentUser?.role || 'Admin',
+      status: 'active' as const,
+    },
+  ];
 
   return (
     <>
@@ -78,30 +110,100 @@ export const Sidebar: React.FC = () => {
         }`}
       >
         <div className="overflow-y-auto flex-1">
-          {/* Brand Header */}
-          <div className="p-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-white shadow-xs ring-1 ring-slate-200 dark:ring-white/20 flex items-center justify-center p-1 shrink-0">
-                <img
-                  src="/logo.png"
-                  alt="Logo"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-              <div>
-                <h1 className="font-semibold text-slate-900 dark:text-slate-100 text-xs tracking-tight">TaskFlow</h1>
-                <div className="text-[10px] text-slate-400 dark:text-slate-500">Workspace</div>
-              </div>
+          {/* Workspace Switcher Brand Header */}
+          <div className="p-3 border-b border-slate-200 dark:border-slate-800 relative" ref={workspaceMenuRef}>
+            <div className="flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => setIsWorkspaceMenuOpen(!isWorkspaceMenuOpen)}
+                className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-200/50 dark:hover:bg-slate-800/80 transition-all text-left flex-1 min-w-0 group cursor-pointer"
+                title="Switch or Create Workspace"
+              >
+                <div className="w-7 h-7 rounded-lg bg-white shadow-xs ring-1 ring-slate-200 dark:ring-white/20 flex items-center justify-center p-1 shrink-0">
+                  <img
+                    src="/logo.png"
+                    alt="Logo"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1">
+                    <h1 className="font-semibold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
+                      {currentUser?.workspaceName || 'TaskFlow'}
+                    </h1>
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                    <span className="truncate">{currentUser?.role || 'Member'} Workspace</span>
+                  </div>
+                </div>
+                <ChevronsUpDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 shrink-0" />
+              </button>
+
+              {/* Mobile Close Button */}
+              <button
+                onClick={() => setMobileSidebarOpen(false)}
+                className="md:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors shrink-0 ml-1"
+                title="Close Menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Mobile Close Button */}
-            <button
-              onClick={() => setMobileSidebarOpen(false)}
-              className="md:hidden p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-800 transition-colors"
-              title="Close Menu"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            {/* Workspace Switcher Popover Menu */}
+            {isWorkspaceMenuOpen && (
+              <div className="absolute top-full left-2 right-2 mt-1 z-50 bg-white dark:bg-[#151720] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-1.5 space-y-1 animate-in fade-in zoom-in-95 duration-100 text-xs">
+                <div className="px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Your Workspaces
+                </div>
+
+                <div className="max-h-48 overflow-y-auto space-y-0.5">
+                  {memberships.map((m) => {
+                    const isActive = m.workspaceId === currentUser?.workspaceId;
+                    return (
+                      <button
+                        key={m.workspaceId || m.id}
+                        type="button"
+                        onClick={() => {
+                          setIsWorkspaceMenuOpen(false);
+                          if (!isActive) {
+                            switchWorkspace(m.workspaceId);
+                          }
+                        }}
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium transition-colors cursor-pointer ${
+                          isActive
+                            ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold'
+                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 truncate">
+                          <Building2 className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
+                          <div className="text-left truncate">
+                            <div className="truncate text-xs">{m.workspaceName}</div>
+                            <div className="text-[10px] opacity-70 font-normal">{m.role}</div>
+                          </div>
+                        </div>
+
+                        {isActive && <Check className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsWorkspaceMenuOpen(false);
+                      setNewWorkspaceModalOpen(true);
+                    }}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Create Workspace</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* New Task Action Button (Disabled for Viewer) */}
@@ -273,7 +375,7 @@ export const Sidebar: React.FC = () => {
                         className="p-1 rounded text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors"
                         title="Rename project (or double click)"
                       >
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
@@ -290,7 +392,7 @@ export const Sidebar: React.FC = () => {
                         className="p-1 rounded text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
                         title={`Delete ${p.name}`}
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}

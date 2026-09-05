@@ -9,10 +9,11 @@ datasource db {
 }
 
 model Workspace {
-  id            String         @id @default(cuid())
+  id            String            @id @default(cuid())
   name          String
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  members       WorkspaceMember[]
   users         User[]
   projects      Project[]
   activities    Activity[]
@@ -23,19 +24,35 @@ model Workspace {
 }
 
 model User {
-  id          String     @id @default(cuid())
+  id          String            @id @default(cuid())
   name        String
-  email       String     @unique
-  password    String     @default("$2a$10$1r2bA.3wI6/l2.5aI/E07e4sKj40QeE5vM6/m2oQ8b.V2e5qWl7C2")
-  avatar      String     @db.Text
-  role        String     @default("Member") // Admin, Member, Viewer
-  status      String     @default("active") // active, invited, offline
+  email       String            @unique
+  password    String            @default("$2a$10$1r2bA.3wI6/l2.5aI/E07e4sKj40QeE5vM6/m2oQ8b.V2e5qWl7C2")
+  avatar      String            @db.Text
+  role        String            @default("Member") // Admin, Member, Viewer
+  status      String            @default("active") // active, invited, offline
   workspaceId String?
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  workspace   Workspace?        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  memberships WorkspaceMember[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
   @@map("users")
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  role        String    @default("Member") // Admin, Member, Viewer
+  status      String    @default("active") // active, invited
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, workspaceId])
+  @@map("workspace_members")
 }
 
 model Project {

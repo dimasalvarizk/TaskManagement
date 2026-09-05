@@ -13,6 +13,14 @@ export interface Workspace {
   updatedAt?: string;
 }
 
+export interface WorkspaceMembership {
+  id: string;
+  workspaceId: string;
+  workspaceName: string;
+  role: Role;
+  status: 'active' | 'invited';
+}
+
 export interface User {
   id: string;
   name: string;
@@ -22,6 +30,7 @@ export interface User {
   status: 'active' | 'invited' | 'offline';
   workspaceId?: string;
   workspaceName?: string;
+  memberships?: WorkspaceMembership[];
 }
 
 export interface SubTask {

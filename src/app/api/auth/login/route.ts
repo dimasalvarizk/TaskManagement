@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { email, password } = await req.json();
+    const { email, password, activeWorkspaceId } = await req.json();
 
     if (!email) {
       return NextResponse.json(
@@ -18,12 +18,17 @@ export async function POST(req: Request) {
     const cleanEmail = email.toLowerCase().trim();
     let user = await prisma.user.findUnique({
       where: { email: cleanEmail },
-      include: { workspace: true },
+      include: {
+        memberships: {
+          include: { workspace: true },
+        },
+        workspace: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: 'User not found in any workspace' },
+        { success: false, error: 'User not found' },
         { status: 404 }
       );
     }
@@ -39,40 +44,77 @@ export async function POST(req: Request) {
       }
     }
 
-    // Ensure user has an assigned workspace (migration safety)
-    let workspaceName = user.workspace?.name || 'ODST Workspace';
-    let workspaceId = user.workspaceId;
-
-    if (!workspaceId) {
-      // Find existing default or create new
-      let defaultWorkspace = await prisma.workspace.findFirst({
-        orderBy: { createdAt: 'asc' },
-      });
-
-      if (!defaultWorkspace) {
-        defaultWorkspace = await prisma.workspace.create({
-          data: { name: 'ODST Workspace' },
+    // Auto-migrate legacy user to have at least one WorkspaceMember
+    if (user.memberships.length === 0) {
+      let wsId = user.workspaceId;
+      if (!wsId) {
+        let defaultWs = await prisma.workspace.findFirst({ orderBy: { createdAt: 'asc' } });
+        if (!defaultWs) {
+          defaultWs = await prisma.workspace.create({
+            data: { name: `${user.name}'s Workspace` },
+          });
+        }
+        wsId = defaultWs.id;
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { workspaceId: wsId },
         });
       }
 
-      await prisma.user.update({
-        where: { id: user.id },
-        data: { workspaceId: defaultWorkspace.id },
+      await prisma.workspaceMember.upsert({
+        where: {
+          userId_workspaceId: {
+            userId: user.id,
+            workspaceId: wsId,
+          },
+        },
+        update: {},
+        create: {
+          userId: user.id,
+          workspaceId: wsId,
+          role: user.role || 'Admin',
+          status: 'active',
+        },
       });
 
-      workspaceId = defaultWorkspace.id;
-      workspaceName = defaultWorkspace.name;
+      // Refetch user with memberships
+      user = await prisma.user.findUnique({
+        where: { id: user.id },
+        include: {
+          memberships: {
+            include: { workspace: true },
+          },
+          workspace: true,
+        },
+      }) as any;
+    }
+
+    const formattedMemberships = (user?.memberships || []).map((m: any) => ({
+      id: m.id,
+      workspaceId: m.workspaceId,
+      workspaceName: m.workspace?.name || 'Workspace',
+      role: m.role,
+      status: m.status,
+    }));
+
+    // Determine active workspace
+    let activeMembership = formattedMemberships.find(
+      (m: any) => m.workspaceId === activeWorkspaceId && m.status === 'active'
+    );
+    if (!activeMembership) {
+      activeMembership = formattedMemberships.find((m: any) => m.status === 'active') || formattedMemberships[0];
     }
 
     const safeUser = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      role: user.role,
-      status: user.status,
-      workspaceId,
-      workspaceName,
+      id: user!.id,
+      name: user!.name,
+      email: user!.email,
+      avatar: user!.avatar,
+      role: activeMembership?.role || user!.role,
+      status: activeMembership?.status || user!.status,
+      workspaceId: activeMembership?.workspaceId,
+      workspaceName: activeMembership?.workspaceName,
+      memberships: formattedMemberships,
     };
 
     return NextResponse.json({

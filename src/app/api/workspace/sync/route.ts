@@ -13,8 +13,13 @@ export async function GET(req: Request) {
     if (!workspaceId && email) {
       const user = await prisma.user.findUnique({
         where: { email: email.toLowerCase().trim() },
+        include: {
+          memberships: { include: { workspace: true } },
+        },
       });
-      if (user?.workspaceId) {
+      if (user?.memberships && user.memberships.length > 0) {
+        workspaceId = user.memberships[0].workspaceId;
+      } else if (user?.workspaceId) {
         workspaceId = user.workspaceId;
       }
     }
@@ -28,15 +33,6 @@ export async function GET(req: Request) {
         workspaceId = firstWorkspace.id;
       }
     }
-
-    // Clean any legacy demo data from database
-    const demoEmails = ['admin@taskflow.io', 'member@taskflow.io', 'designer@taskflow.io', 'viewer@taskflow.io'];
-    await prisma.user.deleteMany({
-      where: { email: { in: demoEmails } },
-    }).catch(() => {});
-    await prisma.project.deleteMany({
-      where: { id: { in: ['p1', 'p2', 'p3'] } },
-    }).catch(() => {});
 
     // If no workspace exists yet in database
     if (!workspaceId) {
@@ -60,9 +56,14 @@ export async function GET(req: Request) {
 
     const projectIds = dbProjects.map((p) => p.id);
 
-    // Fetch all related entities scoped to this workspace
-    const [dbUsers, dbTasks, dbDocs, dbActivities, dbNotifications, dbSentEmails] =
+    // Fetch members of this workspace (via WorkspaceMember relation)
+    const [dbMembers, dbLegacyUsers, dbTasks, dbDocs, dbActivities, dbNotifications, dbSentEmails] =
       await Promise.all([
+        prisma.workspaceMember.findMany({
+          where: { workspaceId },
+          include: { user: true },
+          orderBy: { createdAt: 'asc' },
+        }),
         prisma.user.findMany({
           where: { workspaceId },
           orderBy: { createdAt: 'asc' },
@@ -99,6 +100,40 @@ export async function GET(req: Request) {
           take: 30,
         }),
       ]);
+
+    // Consolidate members into a formatted user list
+    const userMap = new Map<string, any>();
+
+    // Add members from WorkspaceMember
+    for (const m of dbMembers) {
+      userMap.set(m.userId, {
+        id: m.userId,
+        name: m.user.name,
+        email: m.user.email,
+        avatar: m.user.avatar,
+        role: m.role as any,
+        status: m.status as any,
+        workspaceId: m.workspaceId,
+        memberId: m.id,
+      });
+    }
+
+    // Add legacy users if not already present
+    for (const u of dbLegacyUsers) {
+      if (!userMap.has(u.id)) {
+        userMap.set(u.id, {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          avatar: u.avatar,
+          role: u.role as any,
+          status: u.status as any,
+          workspaceId: u.workspaceId || workspaceId,
+        });
+      }
+    }
+
+    const formattedUsers = Array.from(userMap.values());
 
     // Format tasks to parse JSON fields
     const formattedTasks = dbTasks.map((t) => ({
@@ -153,17 +188,6 @@ export async function GET(req: Request) {
         }
       })(),
       updatedAt: d.updatedAt.toISOString(),
-    }));
-
-    // Format users (omit password)
-    const formattedUsers = dbUsers.map((u) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      avatar: u.avatar,
-      role: u.role as any,
-      status: u.status as any,
-      workspaceId: u.workspaceId,
     }));
 
     // Format notifications

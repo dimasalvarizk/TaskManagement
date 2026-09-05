@@ -9,8 +9,28 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const workspaceId = searchParams.get('workspaceId');
 
+    if (workspaceId) {
+      const members = await prisma.workspaceMember.findMany({
+        where: { workspaceId },
+        include: { user: true },
+        orderBy: { createdAt: 'asc' },
+      });
+
+      const safeUsers = members.map((m) => ({
+        id: m.userId,
+        name: m.user.name,
+        email: m.user.email,
+        avatar: m.user.avatar,
+        role: m.role,
+        status: m.status,
+        workspaceId: m.workspaceId,
+        memberId: m.id,
+      }));
+
+      return NextResponse.json({ success: true, users: safeUsers });
+    }
+
     const users = await prisma.user.findMany({
-      where: workspaceId ? { workspaceId } : undefined,
       orderBy: { createdAt: 'asc' },
     });
 
@@ -46,24 +66,82 @@ export async function POST(req: Request) {
     }
 
     const cleanEmail = email.toLowerCase().trim();
-    const existing = await prisma.user.findUnique({ where: { email: cleanEmail } });
 
-    if (existing) {
+    // Resolve target workspace
+    let targetWorkspaceId = workspaceId;
+    if (!targetWorkspaceId) {
+      const firstWs = await prisma.workspace.findFirst({ orderBy: { createdAt: 'asc' } });
+      targetWorkspaceId = firstWs?.id;
+    }
+
+    if (!targetWorkspaceId) {
       return NextResponse.json(
-        { success: false, error: 'User with this email already exists' },
-        { status: 409 }
+        { success: false, error: 'Target workspace not found' },
+        { status: 400 }
       );
     }
 
-    // Resolve workspace ID if not provided
-    let resolvedWorkspaceId = workspaceId;
-    if (!resolvedWorkspaceId) {
-      const firstWorkspace = await prisma.workspace.findFirst({
-        orderBy: { createdAt: 'asc' },
+    // 1. Check if user already exists
+    let existingUser = await prisma.user.findUnique({
+      where: { email: cleanEmail },
+      include: {
+        memberships: { where: { workspaceId: targetWorkspaceId } },
+      },
+    });
+
+    if (existingUser) {
+      // Check if already in this workspace
+      const existingMembership = existingUser.memberships[0];
+      if (existingMembership) {
+        if (existingMembership.status === 'active') {
+          return NextResponse.json(
+            { success: false, error: 'User is already an active member of this workspace.' },
+            { status: 409 }
+          );
+        }
+
+        // Return existing pending invite
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: existingMembership.id,
+            userId: existingUser.id,
+            name: existingUser.name,
+            email: existingUser.email,
+            avatar: existingUser.avatar,
+            role: existingMembership.role,
+            status: existingMembership.status,
+            workspaceId: targetWorkspaceId,
+          },
+        });
+      }
+
+      // Add existing user to this workspace as invited
+      const newMembership = await prisma.workspaceMember.create({
+        data: {
+          userId: existingUser.id,
+          workspaceId: targetWorkspaceId,
+          role,
+          status: 'invited',
+        },
       });
-      resolvedWorkspaceId = firstWorkspace?.id;
+
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: newMembership.id,
+          userId: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          avatar: existingUser.avatar,
+          role: newMembership.role,
+          status: newMembership.status,
+          workspaceId: targetWorkspaceId,
+        },
+      });
     }
 
+    // 2. User does not exist at all: create User + WorkspaceMember
     const defaultPassword = await bcrypt.hash('password123', 10);
     const avatar = `https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80`;
 
@@ -75,20 +153,30 @@ export async function POST(req: Request) {
         avatar,
         role,
         status: 'invited',
-        workspaceId: resolvedWorkspaceId,
+        workspaceId: targetWorkspaceId,
+      },
+    });
+
+    const newMembership = await prisma.workspaceMember.create({
+      data: {
+        userId: newUser.id,
+        workspaceId: targetWorkspaceId,
+        role,
+        status: 'invited',
       },
     });
 
     return NextResponse.json({
       success: true,
       user: {
-        id: newUser.id,
+        id: newMembership.id,
+        userId: newUser.id,
         name: newUser.name,
         email: newUser.email,
         avatar: newUser.avatar,
-        role: newUser.role,
-        status: newUser.status,
-        workspaceId: newUser.workspaceId,
+        role: newMembership.role,
+        status: newMembership.status,
+        workspaceId: targetWorkspaceId,
       },
     });
   } catch (error: any) {
