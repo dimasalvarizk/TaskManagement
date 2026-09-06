@@ -453,24 +453,35 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
 
           // Refresh current user if exists
           let nextCurrentUser = current;
-          if (current && data.users) {
-            const updatedCurrent = data.users.find(
+          if (current) {
+            const updatedCurrent = data.users?.find(
               (u: User) =>
                 u.id === current.id ||
                 (u.email && current.email && u.email.toLowerCase() === current.email.toLowerCase())
             );
-            if (updatedCurrent) {
-              nextCurrentUser = {
-                ...current,
-                ...updatedCurrent,
-                workspaceId: updatedCurrent.workspaceId || current.workspaceId,
-                workspaceName: current.workspaceName,
-              };
-              if (typeof window !== 'undefined') {
-                try {
-                  localStorage.setItem('taskflow_user', JSON.stringify(nextCurrentUser));
-                } catch (_) {}
-              }
+
+            const activeWorkspaceId = data.workspaceId || current.workspaceId;
+            const activeWorkspaceName = data.workspaceName || current.workspaceName;
+            const updatedMemberships = data.memberships && data.memberships.length > 0
+              ? data.memberships
+              : current.memberships;
+
+            const activeMembership = updatedMemberships?.find((m: any) => m.workspaceId === activeWorkspaceId);
+
+            nextCurrentUser = {
+              ...current,
+              ...(updatedCurrent || {}),
+              workspaceId: activeWorkspaceId,
+              workspaceName: activeWorkspaceName,
+              role: activeMembership?.role || updatedCurrent?.role || current.role,
+              status: activeMembership?.status || updatedCurrent?.status || current.status,
+              memberships: updatedMemberships,
+            };
+
+            if (typeof window !== 'undefined') {
+              try {
+                localStorage.setItem('taskflow_user', JSON.stringify(nextCurrentUser));
+              } catch (_) {}
             }
           }
 
@@ -921,16 +932,18 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => {
       console.warn('Sync addTask error:', err);
     }
 
-    // Dispatch Email Notification to Assignees (e.g. Dimas assigns task to Ali)
+    // Dispatch Email Notification to Assignees (All assigned members including self-assignment)
     if (newTask.assigneeIds && newTask.assigneeIds.length > 0) {
       const allUsers = get().users;
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
       const assigneesToNotify = allUsers.filter(
-        (u) =>
-          newTask.assigneeIds.includes(u.id) &&
-          u.email &&
-          (!current || u.email.toLowerCase() !== current.email.toLowerCase())
+        (u) => newTask.assigneeIds.includes(u.id) && u.email
       );
+
+      // If current user is assigned but not in allUsers yet, include current user
+      if (current && newTask.assigneeIds.includes(current.id) && current.email && !assigneesToNotify.some(u => u.id === current.id)) {
+        assigneesToNotify.push(current);
+      }
 
       for (const assignee of assigneesToNotify) {
         // 1. Dispatch In-App Notification into MySQL Database

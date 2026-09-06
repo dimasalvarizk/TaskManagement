@@ -9,18 +9,25 @@ export async function GET(req: Request) {
     let workspaceId = searchParams.get('workspaceId');
     const email = searchParams.get('email');
 
-    // If no workspaceId is explicitly provided, look up by email
-    if (!workspaceId && email) {
-      const user = await prisma.user.findUnique({
+    let requestingUser: any = null;
+    if (email) {
+      requestingUser = await prisma.user.findUnique({
         where: { email: email.toLowerCase().trim() },
         include: {
-          memberships: { include: { workspace: true } },
+          memberships: {
+            include: { workspace: true },
+            orderBy: { createdAt: 'asc' },
+          },
         },
       });
-      if (user?.memberships && user.memberships.length > 0) {
-        workspaceId = user.memberships[0].workspaceId;
-      } else if (user?.workspaceId) {
-        workspaceId = user.workspaceId;
+    }
+
+    // If no workspaceId is explicitly provided, look up by requestingUser
+    if (!workspaceId && requestingUser) {
+      if (requestingUser.workspaceId) {
+        workspaceId = requestingUser.workspaceId;
+      } else if (requestingUser.memberships && requestingUser.memberships.length > 0) {
+        workspaceId = requestingUser.memberships[0].workspaceId;
       }
     }
 
@@ -38,6 +45,9 @@ export async function GET(req: Request) {
     if (!workspaceId) {
       return NextResponse.json({
         success: true,
+        workspaceId: null,
+        workspaceName: 'Workspace',
+        memberships: [],
         users: [],
         projects: [],
         tasks: [],
@@ -47,6 +57,28 @@ export async function GET(req: Request) {
         sentEmails: [],
       });
     }
+
+    // Fetch active workspace metadata
+    const currentWorkspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId },
+    });
+
+    // If user switched active workspace, persist to User.workspaceId in DB
+    if (requestingUser && workspaceId && requestingUser.workspaceId !== workspaceId) {
+      await prisma.user.update({
+        where: { id: requestingUser.id },
+        data: { workspaceId },
+      }).catch(() => {});
+    }
+
+    // Format all memberships of requestingUser
+    const formattedUserMemberships = (requestingUser?.memberships || []).map((m: any) => ({
+      id: m.id,
+      workspaceId: m.workspaceId,
+      workspaceName: m.workspace?.name || 'Workspace',
+      role: m.role,
+      status: m.status,
+    }));
 
     // Fetch projects scoped to this workspace
     const dbProjects = await prisma.project.findMany({
@@ -230,6 +262,8 @@ export async function GET(req: Request) {
     return NextResponse.json({
       success: true,
       workspaceId,
+      workspaceName: currentWorkspace?.name || 'Workspace',
+      memberships: formattedUserMemberships,
       users: formattedUsers,
       projects: dbProjects,
       tasks: formattedTasks,
